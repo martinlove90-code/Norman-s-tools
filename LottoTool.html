@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大樂透隨機選號</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --text-main: #f8fafc;
+            --accent: #f59e0b;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: var(--accent);
+            letter-spacing: 2px;
+            font-size: 2.2rem;
+            text-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+        }
+
+        p {
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .balls-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            min-height: 70px;
+        }
+
+        .ball {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ffd700, #f59e0b);
+            color: #000;
+            font-size: 26px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4), inset -3px -3px 10px rgba(0,0,0,0.2);
+            /* 加入過場動畫，讓縮放效果看起來平滑 */
+            transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(to right, #e11d48, #be123c);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(225, 29, 72, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(225, 29, 72, 0.6);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #38bdf8;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #7dd3fc;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>💰 財神爺降臨 💰</h1>
+        <p>為您隨機抽出 6 個 1~49 的不重複號碼</p>
+
+        <div class="balls-container" id="ballsContainer">
+            </div>
+
+        <button id="generateBtn">給我發財密碼！</button>
+        
+        <br>
+        <a href="index.html" class="back-link">← 返回控制台</a>
+    </div>
+
+    <script>
+        const generateBtn = document.getElementById('generateBtn');
+        const ballsContainer = document.getElementById('ballsContainer');
+
+        // 初始化：網頁載入時先建立 6 顆「？」球
+        function initEmptyBalls() {
+            ballsContainer.innerHTML = '';
+            for(let i = 0; i < 6; i++) {
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+                ball.textContent = '?';
+                ballsContainer.appendChild(ball);
+            }
+        }
+
+        function generateNumbers() {
+            // 停用按鈕，避免開獎途中重複點擊
+            generateBtn.disabled = true;
+            generateBtn.style.opacity = '0.7';
+
+            // 產生 6 個 1~49 的不重複隨機數
+            let numbers = new Set();
+            while(numbers.size < 6) {
+                let randomNum = Math.floor(Math.random() * 49) + 1;
+                numbers.add(randomNum);
+            }
+
+            // 轉成陣列並由小到大排序
+            let sortedNumbers = Array.from(numbers).sort((a, b) => a - b);
+            
+            // 取得畫面上已經存在的 6 顆球
+            const balls = document.querySelectorAll('.ball');
+
+            // 如果原本已經有號碼了，先把它們全部洗回「？」
+            balls.forEach(ball => {
+                ball.textContent = '?';
+            });
+
+            // 依序揭曉號碼，加入視覺特效
+            sortedNumbers.forEach((num, index) => {
+                setTimeout(() => {
+                    // 第一步：讓球縮小並稍微變透明（準備翻牌）
+                    balls[index].style.transform = 'scale(0)';
+                    balls[index].style.opacity = '0.5';
+
+                    // 第二步：等待縮小後，改變文字，再放大恢復原狀（完成翻牌）
+                    setTimeout(() => {
+                        balls[index].textContent = num < 10 ? '0' + num : num;
+                        balls[index].style.transform = 'scale(1)';
+                        balls[index].style.opacity = '1';
+                    }, 200); // 這個 200 毫秒要和 CSS 的 transition 時間配合
+
+                    // 當最後一顆球開完後，恢復按鈕狀態
+                    if(index === 5) {
+                        setTimeout(() => {
+                            generateBtn.disabled = false;
+                            generateBtn.style.opacity = '1';
+                        }, 200);
+                    }
+                }, index * 400); // 每一顆球延遲 0.4 秒開獎，營造懸念感
+            });
+        }
+
+        // 綁定點擊事件
+        generateBtn.addEventListener('click', generateNumbers);
+
+        // 網頁載入時執行初始化
+        window.onload = initEmptyBalls;
+    </script>
+
+</body>
+</html>

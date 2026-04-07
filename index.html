@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安姆的專屬控制台</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-hover: rgba(51, 65, 85, 0.9);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --accent: #38bdf8;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* 科技感深色漸層背景 */
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            margin-top: 60px;
+            margin-bottom: 40px;
+            text-align: center;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin: 0;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-sub);
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            width: 90%;
+            max-width: 1000px;
+            padding-bottom: 50px;
+        }
+
+        /* 卡片設計 */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px 25px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out backwards;
+        }
+
+        /* 讓卡片進場有微小的時間差 */
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+
+        .card:hover {
+            transform: translateY(-8px);
+            background: var(--card-hover);
+            border-color: var(--accent);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+
+        .icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .card h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.4rem;
+        }
+
+        .card p {
+            margin: 0;
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* 狀態標籤 */
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .status-active {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .status-pending {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid #f59e0b;
+        }
+
+        /* 動畫設定 */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>安姆的專屬控制台</h1>
+        <p>歡迎回來！今天想探索什麼？</p>
+    </header>
+
+    <div class="grid-container">
+        <a href="Randomtool01.html" class="card">
+            <span class="status-badge status-active">Online</span>
+            <div class="icon">🎯</div>
+            <h2>好運抽獎轉盤</h2>
+            <p>選擇困難症發作？交給機率來決定下一步的行動吧！</p>
+        </a>
+
+        <a href="LottoTool.html" class="card">
+            <span class="status-badge status-active">Online</span>
+            <div class="icon">🎰</div>
+            <h2>大樂透隨機選號</h2>
+            <p>一鍵生成 6 個幸運號碼，交給電腦幫你挑出今天的發財金組合！</p>
+        </a>
+
+        <a href="#" class="card">
+            <span class="status-badge status-pending">建置中</span>
+            <div class="icon">⛺</div>
+            <h2>露營 Vlog 企劃中心</h2>
+            <p>腳本靈感紀錄，以及 DaVinci Resolve 影片剪輯素材庫。</p>
+        </a>
+
+        <a href="#" class="card">
+            <span class="status-badge status-pending">建置中</span>
+            <div class="icon">🐈</div>
+            <h2>三主子後勤系統</h2>
+            <p>貓咪健康紀錄與罐頭庫存管理，確保主子們隨時開心。</p>
+        </a>
+    </div>
+
+</body>
+</html>
