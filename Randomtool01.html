@@ -120,6 +120,21 @@
         .btn-update:hover {
             background-color: #27ae60;
         }
+        /* 返回控制台連結樣式 */
+        .back-link {
+            display: block;
+            margin-top: 10px;
+            color: #3498db;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
         #result {
             margin-top: 25px;
             font-size: 26px;
@@ -132,7 +147,7 @@
 </head>
 <body>
 
-    <h1>✨ 抽獎好運輪盤 ✨</h1>
+    <h1>✨ 試試今天的手氣 ✨</h1>
 
     <div class="main-container">
         <div class="wheel-section">
@@ -155,6 +170,8 @@
 學 Python 與影片剪輯
 買三隻主子的罐頭</textarea>
             <button id="updateBtn" class="btn-update">更新轉盤</button>
+            
+            <a href="index.html" class="back-link">← 返回控制台</a>
         </div>
     </div>
 
@@ -167,19 +184,15 @@
         const optionsInput = document.getElementById('optionsInput');
 
         let segments = [];
-        // 擴充顏色庫，避免項目太多時顏色重複太快
         const colors = ['#f1c40f', '#e67e22', '#e74c3c', '#9b59b6', '#3498db', '#1abc9c', '#f39c12', '#d35400', '#c0392b', '#8e44ad', '#2980b9', '#27ae60'];
         
         let currentAngle = 0;
         let isSpinning = false;
 
-        // 從輸入框讀取選項
         function updateSegments() {
-            // 讀取文字，依據換行分割，並過濾掉空白行
             const rawText = optionsInput.value;
             segments = rawText.split('\n').map(item => item.trim()).filter(item => item !== '');
             
-            // 如果全部清空，給個預設值避免報錯
             if (segments.length === 0) {
                 segments = ["請輸入選項"];
             }
@@ -189,7 +202,6 @@
             drawWheel();
         }
 
-        // 繪製轉盤
         function drawWheel() {
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
@@ -216,11 +228,9 @@
                 ctx.textAlign = "right";
                 ctx.fillStyle = "#fff";
                 
-                // 根據選項數量自動調整字體大小
                 let fontSize = segments.length > 10 ? 16 : 20;
                 ctx.font = `bold ${fontSize}px 'Segoe UI', sans-serif`;
                 
-                // 如果文字太長，稍微截斷
                 let text = segments[i];
                 if (text.length > 12) text = text.substring(0, 11) + "...";
                 
@@ -229,12 +239,10 @@
             }
         }
 
-        // 減速動畫曲線 (Ease Out Cubic) - 讓尾速拖得更長更自然
         function easeOut(t) {
             return 1 - Math.pow(1 - t, 3); 
         }
 
-        // 開始轉動
         function spin() {
             if (isSpinning) return;
             isSpinning = true;
@@ -243,10 +251,9 @@
             spinBtn.style.cursor = "not-allowed";
             updateBtn.disabled = true;
 
-            // 調整時間與速度：拉長秒數、降低初速
-            const spinTimeTotal = Math.random() * 3000 + 7000; // 總旋轉時間改為 7 到 10 秒
+            const spinTimeTotal = Math.random() * 3000 + 7000; 
             let spinTime = 0;
-            const spinAngleStart = Math.random() * 8 + 8; // 降低初始旋轉速度 (8~16)
+            const spinAngleStart = Math.random() * 8 + 8; 
             
             function rotateWheel() {
                 spinTime += 20;
@@ -280,11 +287,9 @@
             resultDiv.innerText = `🎉 恭喜抽中：${resultText}！ 🎉`;
         }
 
-        // 綁定事件並初始化
         updateBtn.addEventListener('click', updateSegments);
         spinBtn.addEventListener('click', spin);
         
-        // 載入時先畫出第一次的轉盤
         updateSegments();
     </script>
 </body>
