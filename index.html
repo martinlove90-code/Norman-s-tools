@@ -46,6 +46,7 @@
             color: var(--text-sub);
             font-size: 1.1rem;
             margin-top: 10px;
+            margin-bottom: 20px;
         }
 
         .grid-container {
@@ -53,8 +54,8 @@
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 25px;
             width: 90%;
-            max-width: 900px; /* 稍微縮小最大寬度讓 4 張卡片排列更緊湊 */
-            padding-bottom: 50px;
+            max-width: 900px;
+            padding-bottom: 30px;
         }
 
         /* 卡片設計 */
@@ -128,6 +129,46 @@
             border: 1px solid #f59e0b;
         }
 
+        /* 頁尾與計數器設計 */
+        footer {
+            margin-top: auto; /* 讓頁尾自動推到畫面最下方 */
+            padding: 40px 20px 20px 20px;
+            text-align: center;
+            width: 100%;
+            animation: fadeInUp 1s ease-out 0.6s backwards;
+        }
+
+        .counter-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            margin-bottom: 15px;
+        }
+
+        .counter-badge span.number {
+            font-size: 1.1rem;
+            color: #fff;
+            background: var(--accent);
+            padding: 2px 8px;
+            border-radius: 12px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .footer-text {
+            color: var(--text-sub);
+            font-size: 0.85rem;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
         @keyframes fadeInDown {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -175,6 +216,41 @@
             <p>正在努力發想...</p>
         </a>
     </div>
+
+    <footer>
+        <div class="counter-badge">
+            <span>🚀 系統總啟動次數</span>
+            <span class="number" id="visitCount">...</span>
+        </div>
+        <p class="footer-text">© 2026 安姆的專屬控制台</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const countDisplay = document.getElementById('visitCount');
+            
+            // 設定一個專屬於你的全域唯一 ID (namespace/name)
+            const counterUrl = 'https://api.counterapi.dev/v1/ammu-dashboard/homepage/up';
+
+            // 透過 Fetch API 呼叫雲端計數器
+            fetch(counterUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('網路連線異常');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // 將雲端回傳的真實造訪次數，更新到畫面上
+                    countDisplay.innerText = data.count;
+                })
+                .catch(error => {
+                    console.error("計數器讀取失敗:", error);
+                    // 如果 API 剛好維護中或網路異常，給一個備用的顯示狀態
+                    countDisplay.innerText = "N/A";
+                });
+        });
+    </script>
 
 </body>
 </html>
