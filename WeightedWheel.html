@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>視覺化機率轉盤</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            max-width: 1000px;
+        }
+        /* 轉盤區塊 */
+        .wheel-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .wheel-container {
+            position: relative;
+            width: 360px;
+            height: 360px;
+            margin-bottom: 30px;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+            border: 4px solid #fff; 
+            box-sizing: border-box;
+        }
+        .pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 35px solid #e74c3c;
+            z-index: 10;
+            filter: drop-shadow(0 4px 2px rgba(0,0,0,0.2));
+        }
+        /* 控制面板區塊 */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 350px;
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .controls h3 { margin: 0; color: #34495e; }
+        .controls p { font-size: 13px; color: #7f8c8d; margin: 0 0 10px 0; line-height: 1.4; }
+        
+        /* 選項列表設計 */
+        #optionsList {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .option-item {
+            display: flex;
+            flex-direction: column;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            gap: 8px;
+            position: relative;
+        }
+        .option-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .opt-name {
+            width: 60%;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .opt-del {
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: 0.2s;
+            width: auto;
+        }
+        .opt-del:hover { background: #ff6b81; transform: translateY(0); box-shadow: none; }
+        
+        /* 拉桿與數值 */
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .opt-weight {
+            flex-grow: 1;
+            cursor: pointer;
+            accent-color: #3498db;
+        }
+        .weight-value {
+            font-size: 13px;
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 30px;
+            text-align: right;
+        }
+
+        /* 底部按鈕 */
+        .btn-add { background-color: #2ecc71; padding: 10px; font-size: 16px; margin-bottom: 10px;}
+        .btn-add:hover { background-color: #27ae60; }
+        
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background-color: #3498db;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            width: 100%;
+        }
+        button:hover { background-color: #2980b9; transform: translateY(-2px); }
+        button:active { transform: translateY(2px); box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        
+        .back-link {
+            display: block;
+            margin-top: 10px;
+            color: #3498db;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: #2980b9; text-decoration: underline; }
+        #result {
+            margin-top: 25px;
+            font-size: 26px;
+            font-weight: bold;
+            color: #e67e22;
+            min-height: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🎚️ 視覺化自定義機率轉盤</h1>
+
+    <div class="main-container">
+        <div class="wheel-section">
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <canvas id="wheel" width="450" height="450"></canvas>
+            </div>
+            <button id="spinBtn">開始轉動！</button>
+            <div id="result"></div>
+        </div>
+
+        <div class="controls">
+            <h3>✏️ 動態設定機率</h3>
+            <p>拖曳拉桿即時調整每個選項的權重比率。</p>
+            
+            <div id="optionsList">
+                </div>
+
+            <button id="addOptionBtn" class="btn-add">➕ 新增選項</button>
+            <a href="index.html" class="back-link">← 返回控制台</a>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('wheel');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spinBtn');
+        const resultDiv = document.getElementById('result');
+        const optionsList = document.getElementById('optionsList');
+        const addOptionBtn = document.getElementById('addOptionBtn');
+
+        // 預設資料陣列
+        let options = [
+            { id: 1, name: "SSR 神級大獎", weight: 5 },
+            { id: 2, name: "SR 稀有獎勵", weight: 15 },
+            { id: 3, name: "R 普通獎勵", weight: 30 },
+            { id: 4, name: "銘謝惠顧", weight: 50 }
+        ];
+        
+        let totalWeight = 0;
+        let idCounter = 5;
+        const colors = ['#f1c40f', '#e67e22', '#e74c3c', '#9b59b6', '#3498db', '#1abc9c', '#f39c12', '#d35400', '#c0392b', '#8e44ad', '#2980b9', '#27ae60'];
+        
+        let currentAngle = 0;
+        let isSpinning = false;
+
+        // 渲染右側的拉桿控制列表
+        function renderOptionsUI() {
+            optionsList.innerHTML = '';
+            
+            options.forEach((opt, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'option-item';
+                
+                // 動態生成 HTML
+                itemDiv.innerHTML = `
+                    <div class="option-header">
+                        <input type="text" class="opt-name" value="${opt.name}" data-id="${opt.id}" placeholder="輸入名稱">
+                        <button class="opt-del" data-id="${opt.id}">刪除</button>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" class="opt-weight" min="1" max="100" value="${opt.weight}" data-id="${opt.id}">
+                        <span class="weight-value">${opt.weight}</span>
+                    </div>
+                `;
+                optionsList.appendChild(itemDiv);
+            });
+
+            bindEvents();
+            updateWheelData();
+        }
+
+        // 綁定輸入框與按鈕的事件
+        function bindEvents() {
+            // 名稱更改
+            document.querySelectorAll('.opt-name').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'));
+                    const opt = options.find(o => o.id === id);
+                    if(opt) opt.name = e.target.value;
+                    updateWheelData();
+                });
+            });
+
+            // 拉桿拖曳 (即時更新)
+            document.querySelectorAll('.opt-weight').forEach(slider => {
+                slider.addEventListener('input', (e) => {
+                    const id = parseInt(e.target.getAttribute('data-id'));
+                    const val = parseInt(e.target.value);
+                    const opt = options.find(o => o.id === id);
+                    if(opt) {
+                        opt.weight = val;
+                        // 更新顯示數值
+                        e.target.nextElementSibling.innerText = val;
+                    }
+                    updateWheelData();
+                });
+            });
+
+            // 刪除按鈕
+            document.querySelectorAll('.opt-del').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (options.length <= 1) {
+                        alert("轉盤至少需要一個選項！");
+                        return;
+                    }
+                    const id = parseInt(e.target.getAttribute('data-id'));
+                    options = options.filter(o => o.id !== id);
+                    renderOptionsUI();
+                });
+            });
+        }
+
+        // 新增選項
+        addOptionBtn.addEventListener('click', () => {
+            options.push({ id: idCounter++, name: `新選項 ${options.length + 1}`, weight: 10 });
+            renderOptionsUI();
+            // 自動捲到底部
+            optionsList.parentElement.scrollTop = optionsList.parentElement.scrollHeight;
+        });
+
+        // 統整資料並畫圖
+        function updateWheelData() {
+            totalWeight = options.reduce((sum, opt) => sum + opt.weight, 0);
+            if(totalWeight === 0) totalWeight = 1; // 避免除以 0
+            
+            // 每次更新時將角度歸零，讓畫面固定，不要亂跳
+            if(!isSpinning) {
+                currentAngle = 0;
+                resultDiv.innerText = "";
+                drawWheel();
+            }
+        }
+
+        // 繪製轉盤 (加入機率 % 顯示)
+        function drawWheel() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = centerX;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let startAngle = currentAngle;
+
+            for (let i = 0; i < options.length; i++) {
+                const opt = options[i];
+                const sliceAngle = (opt.weight / totalWeight) * 2 * Math.PI;
+                
+                // 計算百分比 (取到小數第一位，如果是整數則不顯示小數)
+                let percentNum = (opt.weight / totalWeight) * 100;
+                let percentText = percentNum.toFixed(1) + '%';
+                if (percentText.endsWith('.0%')) percentText = percentText.replace('.0%', '%');
+                
+                // 畫扇形
+                ctx.beginPath();
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#ffffff";
+                ctx.stroke();
+
+                // 畫文字
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + sliceAngle / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#fff";
+                
+                // 根據版面大小動態決定字體大小
+                let baseFontSize = options.length > 8 ? 14 : 16;
+                if ((opt.weight / totalWeight) < 0.05) baseFontSize = 11;
+                
+                ctx.font = `bold ${baseFontSize}px 'Segoe UI', sans-serif`;
+                
+                let textName = opt.name;
+                if (textName.length > 8) textName = textName.substring(0, 7) + "...";
+                
+                // 將「名稱」與「機率」合併顯示
+                const displayText = `${textName} (${percentText})`;
+                ctx.fillText(displayText, radius - 30, baseFontSize / 3);
+                
+                ctx.restore();
+                startAngle += sliceAngle;
+            }
+        }
+
+        // 動畫物理曲線
+        function easeOut(t) {
+            return 1 - Math.pow(1 - t, 3); 
+        }
+
+        // 開始旋轉
+        function spin() {
+            if (isSpinning) return;
+            isSpinning = true;
+            resultDiv.innerText = "轉動中...";
+            spinBtn.style.opacity = "0.5";
+            spinBtn.style.cursor = "not-allowed";
+
+            // 轉動時將輸入框鎖定，避免干擾運算
+            document.querySelectorAll('.opt-name, .opt-weight, .opt-del, .btn-add').forEach(el => el.disabled = true);
+
+            const spinTimeTotal = Math.random() * 3000 + 6000; 
+            let spinTime = 0;
+            const spinAngleStart = Math.random() * 8 + 8; 
+            
+            function rotateWheel() {
+                spinTime += 20;
+                if (spinTime >= spinTimeTotal) {
+                    stopRotateWheel();
+                    return;
+                }
+                const progress = spinTime / spinTimeTotal;
+                const angleStep = spinAngleStart * (1 - easeOut(progress));
+                
+                currentAngle += (angleStep * Math.PI / 180);
+                drawWheel();
+                requestAnimationFrame(rotateWheel);
+            }
+
+            rotateWheel();
+        }
+
+        // 計算並顯示結果
+        function stopRotateWheel() {
+            isSpinning = false;
+            spinBtn.style.opacity = "1";
+            spinBtn.style.cursor = "pointer";
+
+            // 解除輸入框鎖定
+            document.querySelectorAll('.opt-name, .opt-weight, .opt-del, .btn-add').forEach(el => el.disabled = false);
+
+            const degrees = (currentAngle * 180 / Math.PI) % 360;
+            const pointAngle = (360 - degrees + 270) % 360;
+            
+            let cumulativeDeg = 0;
+            let resultText = "";
+
+            for (let i = 0; i < options.length; i++) {
+                const segmentDeg = (options[i].weight / totalWeight) * 360;
+                cumulativeDeg += segmentDeg;
+                
+                if (pointAngle <= cumulativeDeg) {
+                    resultText = options[i].name;
+                    break;
+                }
+            }
+            
+            resultDiv.innerText = `🎉 恭喜抽中：${resultText}！ 🎉`;
+        }
+
+        spinBtn.addEventListener('click', spin);
+        
+        // 初始載入
+        renderOptionsUI();
+    </script>
+</body>
+</html>
