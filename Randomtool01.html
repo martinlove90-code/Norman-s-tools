@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>好運抽獎轉盤 - 自訂版</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            max-width: 900px;
+        }
+        /* 轉盤區塊 */
+        .wheel-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .wheel-container {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            margin-bottom: 30px;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+            border: 4px solid #fff; 
+            box-sizing: border-box;
+        }
+        .pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 35px solid #e74c3c;
+            z-index: 10;
+            filter: drop-shadow(0 4px 2px rgba(0,0,0,0.2));
+        }
+        /* 控制面板區塊 */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 300px;
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .controls h3 {
+            margin: 0;
+            color: #34495e;
+        }
+        .controls p {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin: 0;
+        }
+        textarea {
+            width: 100%;
+            height: 160px;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #bdc3c7;
+            resize: none;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background-color: #3498db;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            width: 100%;
+        }
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .btn-update {
+            background-color: #2ecc71;
+        }
+        .btn-update:hover {
+            background-color: #27ae60;
+        }
+        #result {
+            margin-top: 25px;
+            font-size: 26px;
+            font-weight: bold;
+            color: #e67e22;
+            min-height: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>✨ 抽獎好運輪盤 ✨</h1>
+
+    <div class="main-container">
+        <div class="wheel-section">
+            <div class="wheel-container">
+                <div class="pointer"></div>
+                <canvas id="wheel" width="400" height="400"></canvas>
+            </div>
+            <button id="spinBtn">開始轉動！</button>
+            <div id="result"></div>
+        </div>
+
+        <div class="controls">
+            <h3>✏️ 自訂轉盤選項</h3>
+            <p>請輸入選項，每一行代表一個區塊：</p>
+            <textarea id="optionsInput">
+高雄半日遊
+研究投資理財
+籌備露營Vlog
+玩 PoE 刷寶
+學 Python 與影片剪輯
+買三隻主子的罐頭</textarea>
+            <button id="updateBtn" class="btn-update">更新轉盤</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('wheel');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spinBtn');
+        const updateBtn = document.getElementById('updateBtn');
+        const resultDiv = document.getElementById('result');
+        const optionsInput = document.getElementById('optionsInput');
+
+        let segments = [];
+        // 擴充顏色庫，避免項目太多時顏色重複太快
+        const colors = ['#f1c40f', '#e67e22', '#e74c3c', '#9b59b6', '#3498db', '#1abc9c', '#f39c12', '#d35400', '#c0392b', '#8e44ad', '#2980b9', '#27ae60'];
+        
+        let currentAngle = 0;
+        let isSpinning = false;
+
+        // 從輸入框讀取選項
+        function updateSegments() {
+            // 讀取文字，依據換行分割，並過濾掉空白行
+            const rawText = optionsInput.value;
+            segments = rawText.split('\n').map(item => item.trim()).filter(item => item !== '');
+            
+            // 如果全部清空，給個預設值避免報錯
+            if (segments.length === 0) {
+                segments = ["請輸入選項"];
+            }
+            
+            currentAngle = 0; 
+            resultDiv.innerText = "";
+            drawWheel();
+        }
+
+        // 繪製轉盤
+        function drawWheel() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = centerX;
+            const arcSize = (2 * Math.PI) / segments.length;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < segments.length; i++) {
+                const angle = currentAngle + i * arcSize;
+                
+                ctx.beginPath();
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, angle, angle + arcSize);
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#ffffff";
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle + arcSize / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#fff";
+                
+                // 根據選項數量自動調整字體大小
+                let fontSize = segments.length > 10 ? 16 : 20;
+                ctx.font = `bold ${fontSize}px 'Segoe UI', sans-serif`;
+                
+                // 如果文字太長，稍微截斷
+                let text = segments[i];
+                if (text.length > 12) text = text.substring(0, 11) + "...";
+                
+                ctx.fillText(text, radius - 30, fontSize/3);
+                ctx.restore();
+            }
+        }
+
+        // 減速動畫曲線 (Ease Out Cubic) - 讓尾速拖得更長更自然
+        function easeOut(t) {
+            return 1 - Math.pow(1 - t, 3); 
+        }
+
+        // 開始轉動
+        function spin() {
+            if (isSpinning) return;
+            isSpinning = true;
+            resultDiv.innerText = "轉動中...";
+            spinBtn.style.opacity = "0.5";
+            spinBtn.style.cursor = "not-allowed";
+            updateBtn.disabled = true;
+
+            // 調整時間與速度：拉長秒數、降低初速
+            const spinTimeTotal = Math.random() * 3000 + 7000; // 總旋轉時間改為 7 到 10 秒
+            let spinTime = 0;
+            const spinAngleStart = Math.random() * 8 + 8; // 降低初始旋轉速度 (8~16)
+            
+            function rotateWheel() {
+                spinTime += 20;
+                if (spinTime >= spinTimeTotal) {
+                    stopRotateWheel();
+                    return;
+                }
+                const progress = spinTime / spinTimeTotal;
+                const angleStep = spinAngleStart * (1 - easeOut(progress));
+                
+                currentAngle += (angleStep * Math.PI / 180);
+                drawWheel();
+                requestAnimationFrame(rotateWheel);
+            }
+
+            rotateWheel();
+        }
+
+        function stopRotateWheel() {
+            isSpinning = false;
+            spinBtn.style.opacity = "1";
+            spinBtn.style.cursor = "pointer";
+            updateBtn.disabled = false;
+
+            const degrees = (currentAngle * 180 / Math.PI) % 360;
+            const arcSize = 360 / segments.length;
+            const pointAngle = (360 - degrees + 270) % 360;
+            const index = Math.floor(pointAngle / arcSize);
+            
+            const resultText = segments[index];
+            resultDiv.innerText = `🎉 恭喜抽中：${resultText}！ 🎉`;
+        }
+
+        // 綁定事件並初始化
+        updateBtn.addEventListener('click', updateSegments);
+        spinBtn.addEventListener('click', spin);
+        
+        // 載入時先畫出第一次的轉盤
+        updateSegments();
+    </script>
+</body>
+</html>
