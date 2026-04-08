@@ -17,6 +17,7 @@
         h1 {
             color: #2c3e50;
             margin-bottom: 30px;
+            text-align: center;
         }
         .main-container {
             display: flex;
@@ -72,15 +73,34 @@
         .controls h3 {
             margin: 0;
             color: #34495e;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         .controls p {
             font-size: 14px;
             color: #7f8c8d;
             margin: 0;
         }
+        /* 標題輸入框 */
+        .title-input {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #bdc3c7;
+            box-sizing: border-box;
+            font-family: inherit;
+            margin-bottom: 5px;
+            transition: border-color 0.2s;
+        }
+        .title-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
         textarea {
             width: 100%;
-            height: 160px;
+            height: 140px;
             padding: 12px;
             font-size: 16px;
             border-radius: 8px;
@@ -147,7 +167,7 @@
 </head>
 <body>
 
-    <h1>✨ 試試今天的手氣 ✨</h1>
+    <h1 id="mainTitle">✨ 載入中... ✨</h1>
 
     <div class="main-container">
         <div class="wheel-section">
@@ -160,6 +180,9 @@
         </div>
 
         <div class="controls">
+            <h3>📝 轉盤標題設定</h3>
+            <input type="text" id="titleInput" class="title-input" value="好運專屬轉盤" placeholder="請輸入轉盤名稱...">
+
             <h3>✏️ 自訂轉盤選項</h3>
             <p>請輸入選項，每一行代表一個區塊：</p>
             <textarea id="optionsInput">
@@ -169,13 +192,36 @@
 玩 PoE 刷寶
 學 Python 與影片剪輯
 買三隻主子的罐頭</textarea>
-            <button id="updateBtn" class="btn-update">更新轉盤</button>
+            <button id="updateBtn" class="btn-update">更新選項</button>
             
             <a href="index.html" class="back-link">← 返回控制台</a>
         </div>
     </div>
 
     <script>
+        // --- 標題與日期處理邏輯 ---
+        const mainTitle = document.getElementById('mainTitle');
+        const titleInput = document.getElementById('titleInput');
+
+        function updateTitle() {
+            // 取得今天的日期並格式化 (例如：2026/04/08)
+            const d = new Date();
+            const dateString = `${d.getFullYear()}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}`;
+            
+            // 取得輸入框的文字，如果清空則給予預設值
+            const customName = titleInput.value.trim() || "好運抽獎";
+            
+            // 組合字串並顯示在 H1 標題上
+            mainTitle.innerText = `✨ ${dateString} ${customName} ✨`;
+        }
+
+        // 監聽輸入框，打字時即時更新標題
+        titleInput.addEventListener('input', updateTitle);
+        // 網頁載入時先執行一次，把今天的日期印上去
+        updateTitle();
+
+
+        // --- 以下為原本的轉盤邏輯 ---
         const canvas = document.getElementById('wheel');
         const ctx = canvas.getContext('2d');
         const spinBtn = document.getElementById('spinBtn');
