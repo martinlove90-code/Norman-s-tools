@@ -54,7 +54,7 @@
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 25px;
             width: 90%;
-            max-width: 900px;
+            max-width: 1000px;
             padding-bottom: 30px;
         }
 
@@ -81,6 +81,7 @@
         .card:nth-child(2) { animation-delay: 0.2s; }
         .card:nth-child(3) { animation-delay: 0.3s; }
         .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
 
         .card:hover {
             transform: translateY(-8px);
@@ -131,7 +132,7 @@
 
         /* 頁尾與計數器設計 */
         footer {
-            margin-top: auto; /* 讓頁尾自動推到畫面最下方 */
+            margin-top: auto; 
             padding: 40px 20px 20px 20px;
             text-align: center;
             width: 100%;
@@ -195,6 +196,13 @@
             <p>選擇困難症發作？快速輸入選項，交給機率來決定下一步的行動。</p>
         </a>
 
+        <a href="PunchBoard.html" class="card">
+            <span class="status-badge status-active">Online</span>
+            <div class="icon">🎁</div>
+            <h2>驚喜洞洞樂</h2>
+            <p>可自訂數量的盲盒抽卡系統。隨機抽取且不重複，看看今天的手氣在哪裡！</p>
+        </a>
+
         <a href="LottoTool.html" class="card">
             <span class="status-badge status-active">Online</span>
             <div class="icon">🎰</div>
@@ -246,7 +254,6 @@
                 })
                 .catch(error => {
                     console.error("計數器讀取失敗:", error);
-                    // 如果 API 剛好維護中或網路異常，給一個備用的顯示狀態
                     countDisplay.innerText = "N/A";
                 });
         });
