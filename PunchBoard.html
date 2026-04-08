@@ -34,68 +34,19 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.5);
             text-align: center;
             backdrop-filter: blur(10px);
-            max-width: 600px; /* 稍微加寬以容納更多卡牌 */
+            max-width: 600px; 
             width: 100%;
+            box-sizing: border-box;
         }
 
         h1 {
             margin-top: 0;
+            margin-bottom: 25px; /* 增加標題下方的間距 */
             color: var(--accent);
             letter-spacing: 2px;
             font-size: 2rem;
             text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
         }
-
-        /* 數量設定區塊 */
-        .config-panel {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 12px 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .config-panel label {
-            font-size: 1rem;
-            color: #cbd5e1;
-            font-weight: bold;
-        }
-
-        .config-panel input {
-            width: 70px;
-            padding: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            text-align: center;
-            border-radius: 8px;
-            border: 1px solid #475569;
-            background: #1e293b;
-            color: #fff;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .config-panel input:focus {
-            border-color: var(--accent);
-        }
-
-        .btn-update {
-            padding: 8px 16px;
-            font-size: 0.95rem;
-            font-weight: bold;
-            color: #fff;
-            background: #3b82f6;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-update:hover { background: #2563eb; transform: translateY(-1px); }
 
         /* 狀態標籤 */
         .status-label {
@@ -110,7 +61,7 @@
             border: 1px solid rgba(16, 185, 129, 0.4);
         }
 
-        /* 卡牌網格佈局 (用 JS 動態改變行數) */
+        /* 卡牌網格佈局 */
         .board {
             display: grid;
             gap: 10px;
@@ -146,6 +97,11 @@
             border-radius: 8px;
             font-weight: bold;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            word-break: break-all;
+            padding: 2px;
+            box-sizing: border-box;
+            text-align: center;
+            line-height: 1.2;
         }
 
         .card-front {
@@ -168,9 +124,9 @@
             justify-content: center;
         }
 
-        button {
+        button.action-btn {
             flex: 1;
-            padding: 15px 20px;
+            padding: 15px 10px;
             font-size: 16px;
             font-weight: bold;
             color: #fff;
@@ -190,9 +146,74 @@
         .btn-reset:hover { background: #475569; transform: translateY(-2px); }
         .btn-reset:active { transform: translateY(1px); }
 
+        /* 移動到下方的數量與文字設定區塊 */
+        .config-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 30px; /* 增加與上方按鈕的距離 */
+            margin-bottom: 10px; 
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .config-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .config-panel label {
+            font-size: 1rem;
+            color: #cbd5e1;
+            font-weight: bold;
+            width: 85px;
+            text-align: right;
+        }
+
+        .config-panel input {
+            width: 80px;
+            padding: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #1e293b;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .config-panel input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-update {
+            padding: 10px 20px;
+            margin-top: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            background: #3b82f6;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .btn-update:hover { background: #2563eb; transform: translateY(-1px); }
+
         .back-link {
             display: inline-block;
-            margin-top: 25px;
+            margin-top: 15px;
             color: #38bdf8;
             text-decoration: none;
             font-size: 14px;
@@ -206,20 +227,26 @@
     <div class="container">
         <h1>🎁 驚喜洞洞樂</h1>
         
-        <div class="config-panel">
-            <label for="cardCountInput">洞洞數量：</label>
-            <input type="number" id="cardCountInput" value="25" min="2" max="100">
-            <button id="applyCountBtn" class="btn-update">套用並重置</button>
-        </div>
-
         <div id="statusLabel" class="status-label">剩餘可抽：25 / 25</div>
 
         <div class="board" id="board">
             </div>
 
         <div class="controls">
-            <button id="drawBtn" class="btn-draw">🎯 隨機抽取</button>
-            <button id="resetBtn" class="btn-reset">🔄 進入下一輪</button>
+            <button id="drawBtn" class="action-btn btn-draw">🎯 隨機抽取</button>
+            <button id="resetBtn" class="action-btn btn-reset">🔄 進入下一輪</button>
+        </div>
+
+        <div class="config-panel">
+            <div class="config-row">
+                <label for="cardCountInput">洞洞數量：</label>
+                <input type="number" id="cardCountInput" value="25" min="2" max="100">
+            </div>
+            <div class="config-row">
+                <label for="drawnTextInput">開獎文字：</label>
+                <input type="text" id="drawnTextInput" value="中！" maxlength="4">
+            </div>
+            <button id="applyConfigBtn" class="btn-update">套用設定並重置</button>
         </div>
         
         <a href="index.html" class="back-link">← 返回控制台</a>
@@ -231,24 +258,36 @@
         const resetBtn = document.getElementById('resetBtn');
         const statusLabel = document.getElementById('statusLabel');
         const cardCountInput = document.getElementById('cardCountInput');
-        const applyCountBtn = document.getElementById('applyCountBtn');
+        const drawnTextInput = document.getElementById('drawnTextInput');
+        const applyConfigBtn = document.getElementById('applyConfigBtn');
 
-        let TOTAL_CARDS = 25; // 預設數量
+        let TOTAL_CARDS = 25; 
+        let currentDrawnText = "中！";
         let cardsData = []; 
 
-        // 根據總數量，自動計算最佳的排版欄數 (趨近於正方形)
+        // 根據總數量，自動計算最佳的排版欄數
         function calculateGridColumns(total) {
             let cols = Math.ceil(Math.sqrt(total));
-            // 限制最多 10 欄，避免卡片在手機上縮得太小
             if (cols > 10) cols = 10;
             return cols;
         }
 
-        // 根據卡片總數，動態調整字體大小，避免數量太多時文字擠出框外
-        function getDynamicFontSize(total) {
-            if (total <= 25) return { front: '24px', back: '16px' };
-            if (total <= 49) return { front: '18px', back: '12px' };
-            return { front: '14px', back: '10px' };
+        // 根據卡片總數與自訂文字的長度，動態微調字體大小
+        function getDynamicFontSize(total, textLength) {
+            let frontSize = '24px';
+            let backSize = '16px';
+
+            if (total <= 25) {
+                frontSize = '24px';
+                backSize = textLength > 2 ? '14px' : '18px';
+            } else if (total <= 49) {
+                frontSize = '18px';
+                backSize = textLength > 2 ? '10px' : '14px';
+            } else {
+                frontSize = '14px';
+                backSize = '10px';
+            }
+            return { front: frontSize, back: backSize };
         }
 
         // 初始化/重置遊戲
@@ -256,11 +295,10 @@
             board.innerHTML = '';
             cardsData = [];
 
-            // 設定 CSS Grid 欄數
             const cols = calculateGridColumns(TOTAL_CARDS);
             board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
-            const fontSizes = getDynamicFontSize(TOTAL_CARDS);
+            const fontSizes = getDynamicFontSize(TOTAL_CARDS, currentDrawnText.length);
 
             for (let i = 0; i < TOTAL_CARDS; i++) {
                 const cardEl = document.createElement('div');
@@ -269,7 +307,7 @@
                 cardEl.innerHTML = `
                     <div class="card-inner">
                         <div class="card-front" style="font-size: ${fontSizes.front}">?</div>
-                        <div class="card-back" style="font-size: ${fontSizes.back}">中!</div>
+                        <div class="card-back" style="font-size: ${fontSizes.back}">${currentDrawnText}</div>
                     </div>
                 `;
                 
@@ -286,11 +324,10 @@
             drawBtn.disabled = false;
         }
 
-        // 應用新的卡牌數量設定
-        function applyNewCount() {
+        // 應用新的設定 (數量 + 文字)
+        function applyConfig() {
             let newCount = parseInt(cardCountInput.value);
             
-            // 防呆處理
             if (isNaN(newCount) || newCount < 2) {
                 alert("數量至少要 2 張喔！");
                 newCount = 2;
@@ -301,7 +338,14 @@
                 cardCountInput.value = 100;
             }
 
+            let newText = drawnTextInput.value.trim();
+            if (newText === "") {
+                newText = "中！";
+                drawnTextInput.value = "中！";
+            }
+
             TOTAL_CARDS = newCount;
+            currentDrawnText = newText;
             initGame();
         }
 
@@ -341,11 +385,13 @@
         // 綁定事件
         drawBtn.addEventListener('click', drawCard);
         resetBtn.addEventListener('click', initGame);
-        applyCountBtn.addEventListener('click', applyNewCount);
+        applyConfigBtn.addEventListener('click', applyConfig);
         
-        // 讓輸入框按下 Enter 鍵也能觸發套用
         cardCountInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') applyNewCount();
+            if (e.key === 'Enter') applyConfig();
+        });
+        drawnTextInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') applyConfig();
         });
 
         // 初始載入
