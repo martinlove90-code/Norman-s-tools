@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>命運爬梯子</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --text-main: #f8fafc;
+            --line-color: #64748b;
+            --path-color: #f59e0b; /* 動畫軌跡顏色 */
+            --accent: #38bdf8;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: var(--accent);
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);
+        }
+
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 40px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        /* 左側：梯子遊戲區 */
+        .game-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .top-row, .bottom-row {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+        }
+
+        .top-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #000;
+            font-weight: bold;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid #fff;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(56, 189, 248, 0.4);
+        }
+
+        .top-btn:hover {
+            transform: scale(1.1);
+            background: #7dd3fc;
+        }
+
+        .top-btn:disabled {
+            background: #475569;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            color: #94a3b8;
+        }
+
+        .bottom-label {
+            writing-mode: vertical-rl; /* 文字直排 */
+            text-orientation: upright;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #cbd5e1;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .bottom-label.highlight {
+            color: var(--path-color);
+            transform: scale(1.1);
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+
+        canvas {
+            background: transparent;
+            margin: 10px 0;
+            border-radius: 10px;
+        }
+
+        #result {
+            margin-top: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--path-color);
+            min-height: 35px;
+        }
+
+        /* 右側：控制面板 */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 300px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .controls h3 { margin: 0; color: #f8fafc; }
+        .controls p { font-size: 14px; color: #94a3b8; margin: 0; }
+        
+        textarea {
+            width: 100%;
+            height: 180px;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #1e293b;
+            color: #fff;
+            resize: none;
+            box-sizing: border-box;
+        }
+
+        button.btn-generate {
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: #10b981;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button.btn-generate:hover { background: #059669; transform: translateY(-2px); }
+
+        .back-link {
+            display: block;
+            margin-top: 10px;
+            color: var(--accent);
+            text-decoration: none;
+            text-align: center;
+            font-weight: bold;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+    </style>
+</head>
+<body>
+
+    <h1>🪜 命運爬梯子</h1>
+
+    <div class="main-container">
+        <div class="game-section">
+            <div class="top-row" id="topRow"></div>
+            <canvas id="ladderCanvas" width="600" height="400"></canvas>
+            <div class="bottom-row" id="bottomRow"></div>
+            <div id="result"></div>
+        </div>
+
+        <div class="controls">
+            <h3>✏️ 自訂底部選項</h3>
+            <p>請輸入底部項目，每行一個。<br>數量將決定梯子的直線數。</p>
+            <textarea id="optionsInput">
+玩 PoE 1
+學 Python
+研究投資
+整理露營裝備
+買貓罐頭
+研究高雄租屋</textarea>
+            <button id="generateBtn" class="btn-generate">重新生成梯子</button>
+            <a href="index.html" class="back-link">← 返回控制台</a>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('ladderCanvas');
+        const ctx = canvas.getContext('2d');
+        const topRow = document.getElementById('topRow');
+        const bottomRow = document.getElementById('bottomRow');
+        const optionsInput = document.getElementById('optionsInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultDiv = document.getElementById('result');
+
+        let items = [];
+        let rungs = []; // 儲存所有的橫線 {y, col1, col2}
+        let colXs = []; // 儲存每條直線的 X 座標
+        let isAnimating = false;
+
+        // 設定畫布尺寸與邊距
+        const paddingTop = 20;
+        const paddingBottom = 20;
+
+        function initLadder() {
+            // 解析輸入框
+            const rawText = optionsInput.value;
+            items = rawText.split('\n').map(item => item.trim()).filter(item => item !== '');
+            
+            if (items.length < 2) {
+                alert("至少需要輸入 2 個選項才能爬梯子喔！");
+                return;
+            }
+            if (items.length > 10) {
+                alert("為了畫面美觀，最多支援 10 個選項！");
+                items = items.slice(0, 10);
+            }
+
+            resultDiv.innerText = "";
+            topRow.innerHTML = "";
+            bottomRow.innerHTML = "";
+            rungs = [];
+            colXs = [];
+
+            // 根據選項數量計算每條線的 X 座標
+            const spacing = canvas.width / items.length;
+            
+            for (let i = 0; i < items.length; i++) {
+                colXs.push(spacing / 2 + i * spacing);
+
+                // 產生上方的按鈕
+                const btn = document.createElement('div');
+                btn.className = 'top-btn';
+                btn.innerText = i + 1;
+                btn.style.width = `${Math.min(40, spacing * 0.6)}px`;
+                btn.style.height = `${Math.min(40, spacing * 0.6)}px`;
+                btn.onclick = () => startTrace(i);
+                topRow.appendChild(btn);
+
+                // 產生下方的標籤
+                const label = document.createElement('div');
+                label.className = 'bottom-label';
+                // 文字太長則截斷
+                label.innerText = items[i].length > 6 ? items[i].substring(0,6) + '...' : items[i];
+                label.style.width = `${spacing}px`;
+                bottomRow.appendChild(label);
+            }
+
+            generateRungs();
+            drawStaticLadder();
+        }
+
+        // 隨機產生橫線 (阿彌陀籤規則)
+        function generateRungs() {
+            const minSpaceY = 30; // 橫線之間最小的垂直間距
+            const availableHeight = canvas.height - paddingTop - paddingBottom;
+            
+            // 對於每一對相鄰的直線，隨機產生橫線
+            for (let c = 0; c < items.length - 1; c++) {
+                // 每相鄰兩條線之間隨機產生 2~4 條橫線
+                const rungCount = Math.floor(Math.random() * 3) + 2; 
+                
+                for (let r = 0; r < rungCount; r++) {
+                    let yPos;
+                    let isValid = false;
+                    let attempts = 0;
+                    
+                    // 確保產生的橫線不會跟已有的橫線太近而重疊
+                    while (!isValid && attempts < 20) {
+                        yPos = paddingTop + Math.random() * (availableHeight - 20) + 10;
+                        isValid = true;
+                        
+                        // 檢查所有牽涉到 col c 和 c+1 的既有橫線
+                        for (let existing of rungs) {
+                            if ((existing.col1 === c || existing.col2 === c || existing.col1 === c+1 || existing.col2 === c+1) && 
+                                Math.abs(existing.y - yPos) < minSpaceY) {
+                                isValid = false;
+                                break;
+                            }
+                        }
+                        attempts++;
+                    }
+                    
+                    if (isValid) {
+                        rungs.push({ y: yPos, col1: c, col2: c + 1 });
+                    }
+                }
+            }
+            
+            // 將橫線依據 Y 座標由上到下排序，方便後續計算路徑
+            rungs.sort((a, b) => a.y - b.y);
+        }
+
+        function drawStaticLadder() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#64748b'; // 直線顏色
+            ctx.lineCap = 'round';
+
+            // 畫直線
+            for (let x of colXs) {
+                ctx.beginPath();
+                ctx.moveTo(x, paddingTop);
+                ctx.lineTo(x, canvas.height - paddingBottom);
+                ctx.stroke();
+            }
+
+            // 畫橫線
+            ctx.strokeStyle = '#94a3b8'; // 橫線顏色稍微淺一點
+            for (let rung of rungs) {
+                ctx.beginPath();
+                ctx.moveTo(colXs[rung.col1], rung.y);
+                ctx.lineTo(colXs[rung.col2], rung.y);
+                ctx.stroke();
+            }
+        }
+
+        // 計算動畫路徑點並執行追蹤動畫
+        function startTrace(startIndex) {
+            if (isAnimating) return;
+            isAnimating = true;
+            resultDiv.innerText = "爬梯中...";
+            
+            // 停用所有按鈕並移除舊的 highlight
+            document.querySelectorAll('.top-btn').forEach(btn => btn.disabled = true);
+            document.querySelectorAll('.bottom-label').forEach(lbl => lbl.classList.remove('highlight'));
+            drawStaticLadder(); // 清除上一條軌跡
+
+            // 計算路徑：起始點
+            let points = [];
+            let currentCol = startIndex;
+            let currentY = paddingTop;
+            points.push({ x: colXs[currentCol], y: currentY });
+
+            // 往下遍歷所有的橫線
+            for (let rung of rungs) {
+                if (rung.y > currentY) {
+                    if (rung.col1 === currentCol) {
+                        // 遇到向右的橫線
+                        points.push({ x: colXs[currentCol], y: rung.y });
+                        points.push({ x: colXs[rung.col2], y: rung.y });
+                        currentCol = rung.col2;
+                        currentY = rung.y;
+                    } else if (rung.col2 === currentCol) {
+                        // 遇到向左的橫線
+                        points.push({ x: colXs[currentCol], y: rung.y });
+                        points.push({ x: colXs[rung.col1], y: rung.y });
+                        currentCol = rung.col1;
+                        currentY = rung.y;
+                    }
+                }
+            }
+            
+            // 抵達終點
+            points.push({ x: colXs[currentCol], y: canvas.height - paddingBottom });
+
+            // 執行動畫
+            animatePath(points, 0, currentCol);
+        }
+
+        function animatePath(points, pointIndex, finalCol) {
+            if (pointIndex >= points.length - 1) {
+                // 動畫結束
+                isAnimating = false;
+                document.querySelectorAll('.top-btn').forEach(btn => btn.disabled = false);
+                document.getElementById('bottomRow').children[finalCol].classList.add('highlight');
+                resultDiv.innerText = `🎉 結果出爐：${items[finalCol]}！`;
+                return;
+            }
+
+            const p1 = points[pointIndex];
+            const p2 = points[pointIndex + 1];
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            
+            // 設定爬行速度
+            const speed = 5; 
+            let progress = 0;
+
+            function step() {
+                progress += speed;
+                if (progress >= distance) progress = distance;
+
+                const currentX = p1.x + (dx / distance) * progress;
+                const currentY = p1.y + (dy / distance) * progress;
+
+                // 畫出軌跡
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(currentX, currentY);
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = '#f59e0b'; // 軌跡顏色 (橘黃)
+                ctx.stroke();
+
+                if (progress < distance) {
+                    requestAnimationFrame(step);
+                } else {
+                    animatePath(points, pointIndex + 1, finalCol);
+                }
+            }
+
+            requestAnimationFrame(step);
+        }
+
+        generateBtn.addEventListener('click', initLadder);
+        
+        // 初始載入
+        initLadder();
+    </script>
+</body>
+</html>
