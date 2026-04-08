@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>好運抽獎轉盤 - 自訂版</title>
+    <title>好運抽獎轉盤 - 記憶版</title>
     <style>
         body {
             display: flex;
@@ -181,17 +181,11 @@
 
         <div class="controls">
             <h3>📝 轉盤標題設定</h3>
-            <input type="text" id="titleInput" class="title-input" value="好運專屬轉盤" placeholder="請輸入轉盤名稱...">
+            <input type="text" id="titleInput" class="title-input" placeholder="請輸入轉盤名稱...">
 
             <h3>✏️ 自訂轉盤選項</h3>
             <p>請輸入選項，每一行代表一個區塊：</p>
-            <textarea id="optionsInput">
-高雄半日遊
-研究投資理財
-籌備露營Vlog
-玩 PoE 刷寶
-學 Python 與影片剪輯
-買三隻主子的罐頭</textarea>
+            <textarea id="optionsInput"></textarea>
             <button id="updateBtn" class="btn-update">更新選項</button>
             
             <a href="index.html" class="back-link">← 返回控制台</a>
@@ -199,35 +193,15 @@
     </div>
 
     <script>
-        // --- 標題與日期處理邏輯 ---
         const mainTitle = document.getElementById('mainTitle');
         const titleInput = document.getElementById('titleInput');
-
-        function updateTitle() {
-            // 取得今天的日期並格式化 (例如：2026/04/08)
-            const d = new Date();
-            const dateString = `${d.getFullYear()}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}`;
-            
-            // 取得輸入框的文字，如果清空則給予預設值
-            const customName = titleInput.value.trim() || "好運抽獎";
-            
-            // 組合字串並顯示在 H1 標題上
-            mainTitle.innerText = `✨ ${dateString} ${customName} ✨`;
-        }
-
-        // 監聽輸入框，打字時即時更新標題
-        titleInput.addEventListener('input', updateTitle);
-        // 網頁載入時先執行一次，把今天的日期印上去
-        updateTitle();
-
-
-        // --- 以下為原本的轉盤邏輯 ---
+        const optionsInput = document.getElementById('optionsInput');
+        
         const canvas = document.getElementById('wheel');
         const ctx = canvas.getContext('2d');
         const spinBtn = document.getElementById('spinBtn');
         const updateBtn = document.getElementById('updateBtn');
         const resultDiv = document.getElementById('result');
-        const optionsInput = document.getElementById('optionsInput');
 
         let segments = [];
         const colors = ['#f1c40f', '#e67e22', '#e74c3c', '#9b59b6', '#3498db', '#1abc9c', '#f39c12', '#d35400', '#c0392b', '#8e44ad', '#2980b9', '#27ae60'];
@@ -235,6 +209,40 @@
         let currentAngle = 0;
         let isSpinning = false;
 
+        // 預設的選項文字（如果第一次進來沒紀錄，就用這個）
+        const defaultOptions = `高雄半日遊\n研究投資理財\n籌備露營Vlog\n玩 PoE 刷寶\n學 Python 與影片剪輯\n買三隻主子的罐頭`;
+        const defaultTitle = "好運專屬轉盤";
+
+        // 讀取本地記憶
+        function loadSavedData() {
+            const savedTitle = localStorage.getItem('wheel_title');
+            const savedOptions = localStorage.getItem('wheel_options');
+
+            if (savedTitle !== null) {
+                titleInput.value = savedTitle;
+            } else {
+                titleInput.value = defaultTitle;
+            }
+
+            if (savedOptions !== null) {
+                optionsInput.value = savedOptions;
+            } else {
+                optionsInput.value = defaultOptions;
+            }
+        }
+
+        // --- 標題與日期處理邏輯 ---
+        function updateTitle() {
+            const d = new Date();
+            const dateString = `${d.getFullYear()}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}`;
+            const customName = titleInput.value.trim() || "好運抽獎";
+            mainTitle.innerText = `✨ ${dateString} ${customName} ✨`;
+
+            // 即時存檔標題
+            localStorage.setItem('wheel_title', titleInput.value);
+        }
+
+        // --- 轉盤更新與存檔邏輯 ---
         function updateSegments() {
             const rawText = optionsInput.value;
             segments = rawText.split('\n').map(item => item.trim()).filter(item => item !== '');
@@ -246,6 +254,9 @@
             currentAngle = 0; 
             resultDiv.innerText = "";
             drawWheel();
+
+            // 即時存檔選項內容
+            localStorage.setItem('wheel_options', rawText);
         }
 
         function drawWheel() {
@@ -333,10 +344,15 @@
             resultDiv.innerText = `🎉 恭喜抽中：${resultText}！ 🎉`;
         }
 
+        // 綁定事件
+        titleInput.addEventListener('input', updateTitle);
         updateBtn.addEventListener('click', updateSegments);
         spinBtn.addEventListener('click', spin);
         
-        updateSegments();
+        // 系統啟動順序
+        loadSavedData();  // 第一步：先去記憶體找找看有沒有存檔
+        updateTitle();    // 第二步：把標題畫出來
+        updateSegments(); // 第三步：把轉盤畫出來
     </script>
 </body>
 </html>
