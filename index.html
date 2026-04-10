@@ -38,7 +38,8 @@
             margin: 0;
             letter-spacing: 2px;
             background: linear-gradient(to right, #38bdf8, #818cf8);
-            -webkit-background-clip: text;
+            -webkit-background-clip: text;   /* Chrome / Safari */
+            background-clip: text;           /* Standard property for other browsers */
             -webkit-text-fill-color: transparent;
         }
 
@@ -222,6 +223,14 @@
             <div class="icon">🎚️</div>
             <h2>視覺化機率轉盤</h2>
             <p>可動態拖曳拉桿自訂機率權重。適合特殊決策或機率不對等的抽卡模擬。</p>
+        </a>
+
+        <!-- 新增的中獎洞洞樂模組 -->
+        <a href="PunchBoardLucky.html" class="card">
+            <span class="status-badge status-active">Online</span>
+            <div class="icon">🏆</div>
+            <h2>中獎洞洞樂</h2>
+            <p>自訂中獎卡片數量的翻牌抽卡遊戲，抽中會有特別特效。</p>
         </a>
 
         <a href="#" class="card">

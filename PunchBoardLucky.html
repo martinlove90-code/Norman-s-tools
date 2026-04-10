@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎁 中獎洞洞樂</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --text-main: #f8fafc;
+            --accent: #10b981;
+            --accent-hover: #059669;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 30px 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            max-width: 800px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--accent);
+            font-size: 2rem;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 10px rgba(16,185,129,0.3);
+        }
+
+        .status-label {
+            display: inline-block;
+            background: rgba(16,185,129,0.2);
+            color: #34d399;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            border: 1px solid rgba(16,185,129,0.4);
+        }
+
+        .board {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .card-container {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4,0.2,0.2,1);
+            transform-style: preserve-3d;
+            position: relative;
+        }
+
+        .card-container.flipped .card-inner {
+            transform: rotateY(180deg) scale(0.95);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: 2px dashed #60a5fa;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: 2px solid #fbbf24;
+            color: #fff;
+            transform: rotateY(180deg);
+        }
+
+        /* 中獎卡片的特殊樣式 */
+        .card-container.winner .card-back {
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%); /* 綠色系 */
+            border: 2px solid #6ee7b7;
+            color: #000;
+            animation: pulseWinner 1.2s infinite alternate;
+        }
+
+        @keyframes pulseWinner {
+            from { transform: rotateY(180deg) scale(0.95); }
+            to { transform: rotateY(180deg) scale(1.05); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        button.action-btn {
+            flex: 1;
+            padding: 15px 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-draw { background: linear-gradient(to right, #10b981, #059669); }
+        .btn-draw:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16,185,129,0.4); }
+        .btn-draw:disabled { background: #64748b; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .btn-reset { background: linear-gradient(to right, #64748b, #475569); }
+        .btn-reset:hover { background: #475569; transform: translateY(-2px); }
+
+        .config-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(0,0,0,0.2);
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .config-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .config-row label {
+            width: 100px;
+            font-weight: bold;
+            color: #cbd5e1;
+        }
+
+        .config-row input {
+            flex: 1;
+            padding: 8px;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: 1px solid #475569;
+            background: #1e293b;
+            color: #fff;
+        }
+
+        .config-row input:focus { border-color: var(--accent); }
+
+        .btn-apply {
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            background: #3b82f6;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+        .btn-apply:hover { background: #2563eb; }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: #38bdf8;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover { color: #7dd3fc; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎁 中獎洞洞樂</h1>
+
+    <div id="statusLabel" class="status-label">剩餘未抽：0 / 0</div>
+
+    <div class="board" id="board"></div>
+
+    <div class="controls">
+        <button id="drawBtn" class="action-btn btn-draw">🎯 抽卡</button>
+        <button id="resetBtn" class="action-btn btn-reset">🔄 重新開始</button>
+    </div>
+
+    <div class="config-panel">
+        <div class="config-row">
+            <label for="totalCards">卡片總數：</label>
+            <input type="number" id="totalCards" value="25" min="2" max="100">
+        </div>
+        <div class="config-row">
+            <label for="winnerCount">中獎卡片數：</label>
+            <input type="number" id="winnerCount" value="3" min="1">
+        </div>
+        <div class="config-row">
+            <label for="winnerText">中獎文字：</label>
+            <input type="text" id="winnerText" value="中！" maxlength="4">
+        </div>
+        <button id="applyConfigBtn" class="btn-apply">套用設定</button>
+    </div>
+
+    <a href="index.html" class="back-link">← 返回控制台</a>
+</div>
+
+<script>
+    // ==== 變數宣告 ====
+    const board = document.getElementById('board');
+    const statusLabel = document.getElementById('statusLabel');
+    const drawBtn = document.getElementById('drawBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const totalCardsInput = document.getElementById('totalCards');
+    const winnerCountInput = document.getElementById('winnerCount');
+    const winnerTextInput = document.getElementById('winnerText');
+    const applyConfigBtn = document.getElementById('applyConfigBtn');
+
+    let TOTAL_CARDS = 25;          // 卡片總數
+    let WINNER_COUNT = 3;          // 中獎卡片數
+    let WINNER_TEXT = "中！";       // 中獎文字
+    let cards = [];                // 每張卡的資料
+    // winnersSet 代表預先隨機挑選的中獎卡片索引，保證抽完後正好 WINNER_COUNT 張中獎卡
+    let winnersSet = new Set();
+    // drawnWinners 記錄已抽出的中獎卡索引，避免重複計算
+    let drawnWinners = new Set();
+
+    // ==== 本地儲存 ====
+    function loadSettings() {
+        const saved = localStorage.getItem('punchLuckySettings');
+        if (saved) {
+            const { total, winner, text } = JSON.parse(saved);
+            TOTAL_CARDS = total;
+            WINNER_COUNT = winner;
+            WINNER_TEXT = text;
+        }
+        totalCardsInput.value = TOTAL_CARDS;
+        winnerCountInput.value = WINNER_COUNT;
+        winnerTextInput.value = WINNER_TEXT;
+    }
+
+    function saveSettings() {
+        const data = { total: TOTAL_CARDS, winner: WINNER_COUNT, text: WINNER_TEXT };
+        localStorage.setItem('punchLuckySettings', JSON.stringify(data));
+    }
+
+    // ==== 初始化遊戲 ====
+    function initGame() {
+        board.innerHTML = '';
+        cards = [];
+        // 清空已抽中的中獎卡記錄
+        drawnWinners.clear();
+
+        // 計算排版欄數（盡量保持正方形）
+        const cols = Math.ceil(Math.sqrt(TOTAL_CARDS));
+        board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+        // 產生隨機的中獎卡片索引集合，確保不會超過總卡片數
+        winnersSet.clear();
+        while (winnersSet.size < WINNER_COUNT) {
+            const idx = Math.floor(Math.random() * TOTAL_CARDS);
+            winnersSet.add(idx);
+        }
+        drawnWinners.clear();
+
+        for (let i = 0; i < TOTAL_CARDS; i++) {
+            const cardEl = document.createElement('div');
+            cardEl.className = 'card-container';
+            // 初始時所有卡片背面為空白，只有抽中獎時才顯示 WINNER_TEXT
+            cardEl.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-front">?</div>
+                    <div class="card-back"></div>
+                </div>
+            `;
+            board.appendChild(cardEl);
+            cards.push({ element: cardEl, isWinner: winnersSet.has(i) });
+        }
+
+        updateStatus();
+        drawBtn.disabled = false;
+    }
+
+    // ==== 更新狀態列 ====
+    function updateStatus() {
+        // 計算尚未翻面的卡片數量（不論是否中獎）
+        const remaining = cards.filter(c => !c.element.classList.contains('flipped')).length;
+        statusLabel.innerText = `剩餘未抽：${remaining} / ${TOTAL_CARDS}`;
+        if (remaining === 0) {
+            drawBtn.disabled = true;
+            statusLabel.innerText = "🎉 全部抽完！";
+        }
+    }
+
+    // ==== 抽卡邏輯 ====
+    function drawCard() {
+        // 取得尚未翻面的卡片
+        const remaining = cards.filter(c => !c.element.classList.contains('flipped'));
+        if (remaining.length === 0) return;
+
+        // 隨機抽取一張
+        const target = remaining[Math.floor(Math.random() * remaining.length)];
+        const idx = cards.indexOf(target);
+
+        // 若此卡在預先選好的中獎集合且尚未被抽過，視為中獎
+        if (winnersSet.has(idx) && !drawnWinners.has(idx)) {
+            drawnWinners.add(idx);
+            const back = target.element.querySelector('.card-back');
+            if (back) back.innerText = WINNER_TEXT;
+            target.element.classList.add('winner');
+        }
+        // 翻面顯示
+        target.element.classList.add('flipped');
+        updateStatus();
+    }
+
+    // ==== 設定套用 ====
+    function applyConfig() {
+        let total = parseInt(totalCardsInput.value);
+        let winCnt = parseInt(winnerCountInput.value);
+        let winTxt = winnerTextInput.value.trim() || "中！";
+
+        // 基本驗證
+        if (isNaN(total) || total < 2) total = 2;
+        if (total > 100) total = 100;
+        if (isNaN(winCnt) || winCnt < 1) winCnt = 1;
+        if (winCnt > total) winCnt = total; // 中獎卡不能超過總卡片數
+
+        TOTAL_CARDS = total;
+        WINNER_COUNT = winCnt;
+        WINNER_TEXT = winTxt;
+
+        saveSettings();
+        initGame();
+    }
+
+    // ==== 事件綁定 ====
+    drawBtn.addEventListener('click', drawCard);
+    resetBtn.addEventListener('click', initGame);
+    applyConfigBtn.addEventListener('click', applyConfig);
+
+    // 允許按 Enter 套用設定
+    [totalCardsInput, winnerCountInput, winnerTextInput].forEach(inp => {
+        inp.addEventListener('keypress', e => {
+            if (e.key === 'Enter') applyConfig();
+        });
+    });
+
+    // 初始載入
+    loadSettings();
+    initGame();
+</script>
+
+</body>
+</html>

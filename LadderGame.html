@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>命運爬梯子</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --text-main: #f8fafc;
+            --line-color: #64748b;
+            --path-color: #f59e0b; 
+            --accent: #38bdf8;
+        }
+
+        body {
+            margin: 0;
+            padding: 15px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            color: var(--accent);
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            text-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);
+            text-align: center;
+        }
+
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        /* 左側：梯子遊戲區 */
+        .game-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 20px 10px; 
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            width: 100%;
+            box-sizing: border-box; 
+        }
+
+        .top-row, .bottom-row {
+            width: 100%;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .top-row { height: 50px; }
+        .bottom-row { height: 140px; margin-top: 5px; }
+
+        .top-btn {
+            position: absolute;
+            top: 5px;
+            transform: translateX(-50%); 
+            border-radius: 50%;
+            background: var(--accent);
+            color: #000;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid #fff;
+            transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(56, 189, 248, 0.4);
+        }
+
+        .top-btn:hover {
+            transform: translateX(-50%) scale(1.1);
+            background: #7dd3fc;
+        }
+
+        .top-btn:disabled {
+            background: #475569;
+            cursor: not-allowed;
+            box-shadow: none;
+            color: #94a3b8;
+        }
+
+        .bottom-label {
+            position: absolute;
+            top: 0;
+            transform: translateX(-50%); 
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #cbd5e1;
+            transition: color 0.3s, transform 0.3s;
+            white-space: nowrap; 
+        }
+
+        .bottom-label.highlight {
+            color: var(--path-color);
+            transform: translateX(-50%) scale(1.1);
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+
+        canvas {
+            background: transparent;
+            border-radius: 10px;
+            display: block;
+        }
+
+        #result {
+            margin-top: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--path-color);
+            min-height: 30px;
+            text-align: center;
+        }
+
+        /* 右側：控制面板 */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px; 
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-sizing: border-box;
+        }
+
+        .controls h3 { margin: 0; color: #f8fafc; }
+        .controls p { font-size: 14px; color: #94a3b8; margin: 0; }
+        
+        textarea {
+            width: 100%;
+            height: 140px;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #1e293b;
+            color: #fff;
+            resize: none;
+            box-sizing: border-box;
+        }
+
+        /* 盲抽模式的開關設計 */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+        }
+        .toggle-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+        .toggle-container label {
+            color: #fff;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        button.btn-generate {
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: #10b981;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+        }
+        button.btn-generate:hover { background: #059669; transform: translateY(-2px); }
+
+        .back-link {
+            display: block;
+            margin-top: 10px;
+            color: var(--accent);
+            text-decoration: none;
+            text-align: center;
+            font-weight: bold;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+    </style>
+</head>
+<body>
+
+    <h1>🪜 命運爬梯子</h1>
+
+    <div class="main-container">
+        <div class="game-section" id="gameSection">
+            <div class="top-row" id="topRow"></div>
+            <canvas id="ladderCanvas"></canvas>
+            <div class="bottom-row" id="bottomRow"></div>
+            <div id="result"></div>
+        </div>
+
+        <div class="controls">
+            <h3>✏️ 自訂底部選項</h3>
+            <p>請輸入底部項目，每行一個。<br>建議選項字數不要過長。</p>
+            <textarea id="optionsInput">
+玩 PoE 1
+學 Python
+研究投資
+整理裝備
+買貓罐頭</textarea>
+
+            <label class="toggle-container">
+                <input type="checkbox" id="blindModeCheckbox" checked>
+                <span>🙈 盲抽模式（點擊後才揭露橫線）</span>
+            </label>
+
+            <button id="generateBtn" class="btn-generate">重新生成梯子</button>
+            <a href="index.html" class="back-link">← 返回控制台</a>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('ladderCanvas');
+        const ctx = canvas.getContext('2d');
+        const topRow = document.getElementById('topRow');
+        const bottomRow = document.getElementById('bottomRow');
+        const optionsInput = document.getElementById('optionsInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultDiv = document.getElementById('result');
+        const gameSection = document.getElementById('gameSection');
+        const blindModeCheckbox = document.getElementById('blindModeCheckbox');
+
+        let items = [];
+        let rungs = []; 
+        let colXs = []; 
+        let isAnimating = false;
+        let isRevealed = false; // 新增變數：紀錄橫線是否已經揭露
+
+        const paddingTop = 20;
+        const paddingBottom = 20;
+
+        function resizeCanvas() {
+            const containerWidth = gameSection.clientWidth - 20;
+            canvas.width = containerWidth;
+            canvas.height = 350; 
+        }
+
+        function initLadder() {
+            if (isAnimating) return; 
+            
+            const rawText = optionsInput.value;
+            items = rawText.split('\n').map(item => item.trim()).filter(item => item !== '');
+            
+            if (items.length < 2) {
+                alert("至少需要輸入 2 個選項喔！");
+                return;
+            }
+            if (items.length > 8) {
+                alert("為了手機版畫面美觀，已自動為您截取前 8 個選項！");
+                items = items.slice(0, 8);
+            }
+
+            resizeCanvas(); 
+
+            resultDiv.innerText = "";
+            topRow.innerHTML = "";
+            bottomRow.innerHTML = "";
+            rungs = [];
+            colXs = [];
+            isRevealed = false; // 每次重新生成時，重置為未揭露狀態
+
+            const spacing = canvas.width / items.length;
+            
+            for (let i = 0; i < items.length; i++) {
+                const currentX = spacing / 2 + i * spacing;
+                colXs.push(currentX);
+
+                const btn = document.createElement('div');
+                btn.className = 'top-btn';
+                btn.innerText = i + 1;
+                
+                const btnSize = Math.min(40, spacing * 0.75);
+                btn.style.width = `${btnSize}px`;
+                btn.style.height = `${btnSize}px`;
+                btn.style.fontSize = `${Math.max(12, btnSize * 0.4)}px`;
+                btn.style.left = `${currentX}px`; 
+                
+                btn.onclick = () => startTrace(i);
+                topRow.appendChild(btn);
+
+                const label = document.createElement('div');
+                label.className = 'bottom-label';
+                
+                let labelText = items[i];
+                if (labelText.length > 7) labelText = labelText.substring(0,6) + '...';
+                
+                label.innerText = labelText;
+                label.style.left = `${currentX}px`; 
+                
+                bottomRow.appendChild(label);
+            }
+
+            generateRungs();
+            drawStaticLadder();
+        }
+
+        function generateRungs() {
+            const minSpaceY = 35; 
+            const availableHeight = canvas.height - paddingTop - paddingBottom;
+            
+            for (let c = 0; c < items.length - 1; c++) {
+                const rungCount = Math.floor(Math.random() * 3) + 2; 
+                
+                for (let r = 0; r < rungCount; r++) {
+                    let yPos;
+                    let isValid = false;
+                    let attempts = 0;
+                    
+                    while (!isValid && attempts < 20) {
+                        yPos = paddingTop + Math.random() * (availableHeight - 20) + 10;
+                        isValid = true;
+                        
+                        for (let existing of rungs) {
+                            if ((existing.col1 === c || existing.col2 === c || existing.col1 === c+1 || existing.col2 === c+1) && 
+                                Math.abs(existing.y - yPos) < minSpaceY) {
+                                isValid = false;
+                                break;
+                            }
+                        }
+                        attempts++;
+                    }
+                    if (isValid) rungs.push({ y: yPos, col1: c, col2: c + 1 });
+                }
+            }
+            rungs.sort((a, b) => a.y - b.y);
+        }
+
+        // 修改：根據盲抽模式與揭露狀態，決定是否畫出橫線
+        function drawStaticLadder() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#64748b'; 
+            ctx.lineCap = 'round';
+
+            // 畫直線 (永遠顯示)
+            for (let x of colXs) {
+                ctx.beginPath();
+                ctx.moveTo(x, paddingTop);
+                ctx.lineTo(x, canvas.height - paddingBottom);
+                ctx.stroke();
+            }
+
+            // 畫橫線 (如果不啟用盲抽，或是已經被揭露了，才畫出來)
+            if (!blindModeCheckbox.checked || isRevealed) {
+                ctx.strokeStyle = '#94a3b8'; 
+                for (let rung of rungs) {
+                    ctx.beginPath();
+                    ctx.moveTo(colXs[rung.col1], rung.y);
+                    ctx.lineTo(colXs[rung.col2], rung.y);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function startTrace(startIndex) {
+            if (isAnimating) return;
+            isAnimating = true;
+            
+            // 點擊瞬間揭露所有橫線
+            isRevealed = true;
+            
+            resultDiv.innerText = "爬梯中...";
+            document.querySelectorAll('.top-btn').forEach(btn => btn.disabled = true);
+            document.querySelectorAll('.bottom-label').forEach(lbl => lbl.classList.remove('highlight'));
+            
+            // 重繪畫布 (這次會把隱藏的橫線也畫出來)
+            drawStaticLadder(); 
+
+            let points = [];
+            let currentCol = startIndex;
+            let currentY = paddingTop;
+            points.push({ x: colXs[currentCol], y: currentY });
+
+            for (let rung of rungs) {
+                if (rung.y > currentY) {
+                    if (rung.col1 === currentCol) {
+                        points.push({ x: colXs[currentCol], y: rung.y });
+                        points.push({ x: colXs[rung.col2], y: rung.y });
+                        currentCol = rung.col2;
+                        currentY = rung.y;
+                    } else if (rung.col2 === currentCol) {
+                        points.push({ x: colXs[currentCol], y: rung.y });
+                        points.push({ x: colXs[rung.col1], y: rung.y });
+                        currentCol = rung.col1;
+                        currentY = rung.y;
+                    }
+                }
+            }
+            
+            points.push({ x: colXs[currentCol], y: canvas.height - paddingBottom });
+            animatePath(points, 0, currentCol);
+        }
+
+        function animatePath(points, pointIndex, finalCol) {
+            if (pointIndex >= points.length - 1) {
+                isAnimating = false;
+                document.querySelectorAll('.top-btn').forEach(btn => btn.disabled = false);
+                document.getElementById('bottomRow').children[finalCol].classList.add('highlight');
+                resultDiv.innerText = `🎉 結果出爐：${items[finalCol]}！`;
+                return;
+            }
+
+            const p1 = points[pointIndex];
+            const p2 = points[pointIndex + 1];
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+            
+            const speed = 5; 
+            let progress = 0;
+
+            function step() {
+                progress += speed;
+                if (progress >= distance) progress = distance;
+
+                const currentX = p1.x + (dx / distance) * progress;
+                const currentY = p1.y + (dy / distance) * progress;
+
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(currentX, currentY);
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = '#f59e0b'; 
+                ctx.stroke();
+
+                if (progress < distance) {
+                    requestAnimationFrame(step);
+                } else {
+                    animatePath(points, pointIndex + 1, finalCol);
+                }
+            }
+            requestAnimationFrame(step);
+        }
+
+        generateBtn.addEventListener('click', initLadder);
+        
+        // 監聽盲抽模式切換，即時重繪畫面
+        blindModeCheckbox.addEventListener('change', () => {
+            if (!isAnimating && !isRevealed) {
+                drawStaticLadder();
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if(!isAnimating) initLadder();
+        });
+        
+        initLadder();
+    </script>
+</body>
+</html>
