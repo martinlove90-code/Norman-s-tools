@@ -1,10 +1,33 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-const CANVAS_WIDTH = 800;
-const CANVAS_HEIGHT = 500;
-canvas.width = CANVAS_WIDTH;
-canvas.height = CANVAS_HEIGHT;
+// Set canvas size based on screen dimensions, but keep reasonable limits
+function resizeCanvas() {
+    // Calculate canvas size based on window size, with max limits
+    const maxWidth = 800;
+    const maxHeight = 500;
+    const margin = 20; // Space around canvas
+    
+    let width = window.innerWidth - margin * 2;
+    let height = window.innerHeight - margin * 2 - 150; // Reserve space for controls
+    
+    // Apply maximum limits
+    if (width > maxWidth) width = maxWidth;
+    if (height > maxHeight) height = maxHeight;
+    
+    // Ensure minimum size
+    if (width < 300) width = 300;
+    if (height < 200) height = 200;
+    
+    canvas.width = width;
+    canvas.height = height;
+}
+
+// Initialize canvas size
+resizeCanvas();
+
+// Update canvas size when window is resized
+window.addEventListener('resize', resizeCanvas);
 
 // Game state
 let score = 0;
