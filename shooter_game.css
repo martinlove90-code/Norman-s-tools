@@ -1,15 +1,16 @@
 body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #000011;
-    color: #ffffff;
-    font-family: 'Arial', sans-serif;
-    overflow: hidden; /* 防止滚动条出现 */
-}
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: center;
+     height: 100vh;
+     margin: 0;
+     background-color: #000011;
+     color: #ffffff;
+     font-family: 'Arial', sans-serif;
+     overflow: visible; /* 允許溢出以顯示固定定位的控制按鈕 */
+     position: relative;
+ }
 
 #gameCanvas {
     background-color: #000033;
@@ -21,12 +22,48 @@ body {
 }
 
 #game-info {
-    width: 800px;
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    font-size: 1.2em;
-}
+     width: 800px;
+     display: flex;
+     justify-content: space-between;
+     padding: 10px 0;
+     font-size: 1.2em;
+     position: relative;
+     z-index: 100;
+ }
+
+/* Fire button styling and positioning */
+#fire-control {
+     position: relative;
+     z-index: 100;
+     margin-top: 15px;
+ }
+
+#fire-button {
+     background-color: rgba(255, 69, 0, 0.8); /* Orange-red */
+     color: white;
+     border: none;
+     width: 80px;
+     height: 80px;
+     font-size: 20px;
+     border-radius: 50%;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     cursor: pointer;
+     box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+     border: 3px solid rgba(255, 255, 255, 0.3);
+     transition: all 0.2s ease;
+ }
+
+#fire-button:active {
+     background-color: rgba(255, 69, 0, 1);
+     transform: scale(0.95);
+ }
+
+#fire-button:focus {
+     outline: none;
+     box-shadow: 0 0 0 3px rgba(255, 69, 0, 0.5);
+ }
 
 #score-display, #lives-display {
      padding: 5px 15px;
@@ -37,13 +74,13 @@ body {
 /* Virtual controls styling for mobile touch */
 #virtual-controls {
       position: fixed;
-      bottom: 20px;
-      left: 0;
-      right: 0;
-      width: 100%;
+      bottom: 30px;
+      left: 10px;
+      right: 10px;
+      width: auto;
       display: flex;
       justify-content: space-between;
-      padding: 0 20px;
+      padding: 0;
       box-sizing: border-box;
       z-index: 1000;
  }
@@ -69,7 +106,66 @@ body {
 
 /* Optional: hide virtual controls on desktop if desired */
 /* @media (min-width: 768px) {
-     #virtual-controls {
-         display: none;
-     }
- } */
+      #virtual-controls {
+          display: none;
+      }
+  } */
+
+/* Back to control panel link */
+.back-link {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: rgba(0, 170, 255, 0.7);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      z-index: 1001;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+ }
+
+.back-link:hover {
+      background-color: rgba(0, 170, 255, 0.9);
+ }
+
+/* Fire button styling and positioning */
+#fire-control {
+     position: relative;
+     z-index: 100;
+     margin-top: 20px;
+     padding-bottom: 20px;
+ }
+
+#fire-button {
+     background-color: rgba(255, 69, 0, 0.8); /* Orange-red */
+     color: white;
+     border: none;
+     width: 90px;
+     height: 90px;
+     font-size: 24px;
+     border-radius: 50%;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     cursor: pointer;
+     box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+     border: 4px solid rgba(255, 255, 255, 0.4);
+     transition: all 0.2s ease;
+ }
+
+#fire-button:active {
+     background-color: rgba(255, 69, 0, 1);
+     transform: scale(0.92);
+ }
+
+#fire-button:focus {
+     outline: none;
+     box-shadow: 0 0 0 4px rgba(255, 69, 0, 0.6);
+ }
