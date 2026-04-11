@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>飛空戰鬥機 - Shooter Game</title>
+    <meta name="description" content="免費線上射擊遊戲，操控飛行戰機擊毀敵機，收集分數與獎勵。">
+    <link rel="preload" href="shooter_game.css" as="style" onload="this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="shooter_game.css"></noscript>
+</head>
+<body>
+    <header>
+        <h1>飛空戰鬥機 - Shooter Game</h1>
+        <section id="start-screen">
+            <h2>飛空戰鬥機</h2>
+            <p>說明：使用左右箭頭鍵或 A/D 移動，空白鍵發射子彈。</p>
+            <button id="start-button">開始遊戲</button>
+        </section>
+        <div id="game-controls">
+            <button id="pause-button" disabled>暫停</button>
+        </div>
+    </header>
+    <main>
+        <canvas id="gameCanvas" aria-label="射擊遊戲畫布" role="img" tabindex="0"></canvas>
+        <!-- 新增發射按鈕，放在畫布下方，位於飛機下方 -->
+        <div id="fire-control" style="text-align:center;margin-top:8px;">
+            <button id="fire-button" aria-label="發射子彈">發射</button>
+        </div>
+        <!-- 虛擬方向鍵，放在畫布下方左右兩側 -->
+        <div id="virtual-controls">
+            <button id="btn-left">←</button>
+            <button id="btn-right">→</button>
+        </div>
+    </main>
+    <section id="game-info">
+        <div id="score-display" aria-live="polite">分數: 0</div>
+        <div id="lives-display" aria-live="polite">生命: ❤️❤️❤️</div>
+    </section>
+    <noscript>
+        為了正常遊玩，請啟用 JavaScript。
+    </noscript>
+    <script src="shooter_game.js" defer></script>
+</body>
+</html>
