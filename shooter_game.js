@@ -39,8 +39,8 @@ let gameLoopInterval = null; // declare loop interval variable
 
 // Player
 let player = {
-    x: CANVAS_WIDTH / 2,
-    y: CANVAS_HEIGHT - 50,
+    x: canvas.width / 2,
+    y: canvas.height - 50,
     width: 50,
     height: 50,
     speed: 5,
@@ -85,7 +85,7 @@ function drawEnemy(enemy) {
 // ==== Game logic functions ====
 function updatePlayer(deltaTime) {
     if (player.x + player.width < 0) player.x = 0;
-    if (player.x > CANVAS_WIDTH - player.width) player.x = CANVAS_WIDTH - player.width;
+    if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
     drawPlayer(); // render the player emoji each frame
 }
 
@@ -102,7 +102,7 @@ function updateEnemies(deltaTime) {
         enemy.y += enemy.speed * deltaTime * 0.001;
         drawEnemy(enemy);
     });
-    enemies = enemies.filter(enemy => enemy.y < CANVAS_HEIGHT + 50);
+    enemies = enemies.filter(enemy => enemy.y < canvas.height + 50);
 }
 
 function checkCollisions() {
@@ -157,7 +157,7 @@ function gameLoop(timestamp) {
     const deltaTime = timestamp - lastTime || 0;
     lastTime = timestamp;
 
-    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     handlePlayerMovement(deltaTime); // enable left/right movement
     updatePlayer(deltaTime);
     updateBullets(deltaTime);
@@ -181,7 +181,7 @@ function spawnEnemy(timestamp) {
     // Limit number of enemies to avoid crowding
     if (!isGameOver && enemies.length < 6 && timestamp - lastSpawnTime > SPAWN_INTERVAL * (0.5 + Math.random() * 0.5)) {
         enemies.push({
-            x: Math.random() * (CANVAS_WIDTH - 40),
+            x: Math.random() * (canvas.width - 40),
             y: -40,
             width: 40,
             height: 40,
@@ -319,6 +319,39 @@ function togglePause() {
         // Resume game
         gameLoopInterval = requestAnimationFrame(gameLoop);
     }
+}
+
+// ==== Game over handling ====
+function endGame() {
+    isGameOver = true;
+    isGameRunning = false;
+    
+    // Stop game loop
+    cancelAnimationFrame(gameLoopInterval);
+    
+    // Clear bullet interval
+    if (bulletIntervalId) {
+        clearInterval(bulletIntervalId);
+        bulletIntervalId = null;
+    }
+    
+    // Show game over message
+    alert(`遊戲結束！得分: ${score}`);
+    
+    // Reset start screen
+    const startScreen = document.getElementById('start-screen');
+    const startBtn = document.getElementById('start-button');
+    const pauseBtn = document.getElementById('pause-button');
+    
+    if (startScreen) startScreen.style.display = 'block';
+    if (startBtn) startBtn.disabled = false;
+    if (pauseBtn) pauseBtn.disabled = true;
+    
+    // Reset game state
+    score = 0;
+    lives = 3;
+    isGameOver = false;
+    isPaused = false;
 }
 
 // ==== Hide start screen and auto-start ====
