@@ -265,6 +265,30 @@
         let isAnimating = false;
         let isRevealed = false; // 新增變數：紀錄橫線是否已經揭露
 
+        // 本地儲存鍵值
+        const STORAGE_KEY_OPTIONS = 'ladder_options';
+        const STORAGE_KEY_BLIND_MODE = 'ladder_blindMode';
+
+        // 讀取本地儲存的選項
+        function loadSavedOptions() {
+            const savedOptions = localStorage.getItem(STORAGE_KEY_OPTIONS);
+            const savedBlindMode = localStorage.getItem(STORAGE_KEY_BLIND_MODE);
+            
+            if (savedOptions !== null) {
+                optionsInput.value = savedOptions;
+            }
+            
+            if (savedBlindMode !== null) {
+                blindModeCheckbox.checked = savedBlindMode === 'true';
+            }
+        }
+
+        // 儲存選項到本地儲存
+        function saveOptions() {
+            localStorage.setItem(STORAGE_KEY_OPTIONS, optionsInput.value);
+            localStorage.setItem(STORAGE_KEY_BLIND_MODE, blindModeCheckbox.checked);
+        }
+
         const paddingTop = 20;
         const paddingBottom = 20;
 
@@ -484,6 +508,13 @@
         window.addEventListener('resize', () => {
             if(!isAnimating) initLadder();
         });
+        
+        // 載入已儲存的選項
+        loadSavedOptions();
+        
+        // 為選項輸入框和盲抽模式切換添加即時儲存事件
+        optionsInput.addEventListener('input', saveOptions);
+        blindModeCheckbox.addEventListener('change', saveOptions);
         
         initLadder();
     </script>
