@@ -218,34 +218,41 @@
              <p>經典的阿彌陀籤！自動隨機生成路線與動畫追蹤，視覺化決定今晚的行程。</p>
          </a>
 
-         <!-- 新增的中獎洞洞樂模組 -->
-         <a href="PunchBoardLucky.html" class="card">
-             <span class="status-badge status-active">Online</span>
-             <div class="icon">🏆</div>
-             <h2>中獎洞洞樂</h2>
-             <p>自訂中獎卡片數量的翻牌抽卡遊戲，抽中會有特別特效。</p>
-         </a>
-
-         <a href="PunchBoardClick.html" class="card">
+          <!-- 新增的中獎洞洞樂模組 -->
+          <a href="PunchBoardLucky.html" class="card">
               <span class="status-badge status-active">Online</span>
-              <div class="icon">🎯</div>
-              <h2>點擊翻牌洞洞樂</h2>
-              <p>點擊卡片翻牌尋找中獎卡片！自訂卡片數量與中獎數量，考驗你的觀察力與運氣。</p>
-         </a>
+              <div class="icon">🏆</div>
+              <h2>中獎洞洞樂</h2>
+              <p>自訂中獎卡片數量的翻牌抽卡遊戲，抽中會有特別特效。</p>
+          </a>
 
-         <a href="WeightedWheel.html" class="card">
-             <span class="status-badge status-active">Online</span>
-             <div class="icon">🎚️</div>
-             <h2>視覺化機率轉盤</h2>
-             <p>可動態拖曳拉桿自訂機率權重。適合特殊決策或機率不對等的抽卡模擬。</p>
-         </a>
+          <a href="RandomNumber.html" class="card">
+              <span class="status-badge status-active">Online</span>
+              <div class="icon">🎲</div>
+              <h2>隨機數字抽取器</h2>
+              <p>輸入最小值和最大值，隨機生成一個正整數。適合抽號碼、決定範圍等情境。</p>
+          </a>
 
-         <a href="shooter_game.html" class="card">
-             <span class="status-badge status-active">Online</span>
-             <div class="icon">🚀</div>
-             <h2>飛空戰鬥機射擊遊戲</h2>
-             <p>操控飛行戰機擊毀敵機，收集分數與獎勵。支援觸控雙手操作。</p>
-         </a>
+          <a href="PunchBoardClick.html" class="card">
+               <span class="status-badge status-active">Online</span>
+               <div class="icon">🎯</div>
+               <h2>點擊翻牌洞洞樂</h2>
+               <p>點擊卡片翻牌尋找中獎卡片！自訂卡片數量與中獎數量，考驗你的觀察力與運氣。</p>
+          </a>
+
+          <a href="WeightedWheel.html" class="card">
+              <span class="status-badge status-active">Online</span>
+              <div class="icon">🎚️</div>
+              <h2>視覺化機率轉盤</h2>
+              <p>可動態拖曳拉桿自訂機率權重。適合特殊決策或機率不對等的抽卡模擬。</p>
+          </a>
+
+           <a href="shooter_game.html" class="card">
+               <span class="status-badge status-active">Online</span>
+               <div class="icon">🚀</div>
+               <h2>飛空戰鬥機射擊遊戲</h2>
+               <p>操控飛行戰機擊毀敵機，收集分數與獎勵。支援觸控雙手操作。</p>
+           </a>
     </div>
 
     <footer>
@@ -259,26 +266,37 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const countDisplay = document.getElementById('visitCount');
-            
-            // 設定一個專屬於你的全域唯一 ID (namespace/name)
-            const counterUrl = 'https://api.counterapi.dev/v1/ammu-dashboard/homepage/up';
+
+            // 設定CounterAPI參數
+            const counterUrl = 'https://api.counterapi.dev/v2/normanyangs-team-3848/first-counter-3848/up';
+            const apiKey = 'ut_DWx8EuMBRePSSmdaKHAHoN51LfajlYca4PocC0Sd';
 
             // 透過 Fetch API 呼叫雲端計數器
-            fetch(counterUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('網路連線異常');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // 將雲端回傳的真實造訪次數，更新到畫面上
-                    countDisplay.innerText = data.count;
-                })
-                .catch(error => {
-                    console.error("計數器讀取失敗:", error);
-                    countDisplay.innerText = "N/A";
-                });
+            fetch(counterUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('網路連線異常');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 將雲端回傳的真實造訪次數，更新到畫面上
+                countDisplay.innerText = data.count;
+            })
+            .catch(error => {
+                console.error("計數器讀取失敗:", error);
+                // Fallback 到本地計數器
+                let localCount = parseInt(localStorage.getItem('localVisitCount') || '0');
+                localCount++;
+                localStorage.setItem('localVisitCount', localCount.toString());
+                countDisplay.innerText = localCount;
+            });
         });
     </script>
 

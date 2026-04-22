@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隨機數字抽取器</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.8);
+            --text-main: #f8fafc;
+            --accent: #10b981;
+            --accent-hover: #059669;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 30px 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 30px;
+            color: var(--accent);
+            font-size: 2rem;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 10px rgba(16,185,129,0.3);
+        }
+
+        .number-display {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 40px 0;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
+            border: 2px solid rgba(16,185,129,0.3);
+            letter-spacing: 10px;
+        }
+
+        .digit {
+            display: inline-block;
+            width: 50px;
+            text-align: center;
+            transition: color 0.3s ease;
+            color: var(--accent);
+        }
+
+        .digit.final {
+            color: #fbbf24;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        button.action-btn {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-generate { background: linear-gradient(to right, #10b981, #059669); }
+        .btn-generate:hover { background: #059669; transform: translateY(-2px); }
+
+        .config-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .config-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .config-row label {
+            width: 80px;
+            font-weight: bold;
+            color: #cbd5e1;
+        }
+
+        .config-row input {
+            flex: 1;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: 1px solid #475569;
+            background: #1e293b;
+            color: #fff;
+        }
+
+        .config-row input:focus { border-color: var(--accent); }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #38bdf8;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover { color: #7dd3fc; text-decoration: underline; }
+
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎲 隨機數字抽取器</h1>
+
+    <div id="numberDisplay" class="number-display">
+        <span class="digit" id="hundreds">0</span>
+        <span class="digit" id="tens">0</span>
+        <span class="digit" id="ones">0</span>
+    </div>
+
+    <div class="controls">
+        <button id="generateBtn" class="action-btn btn-generate">🎲 生成數字</button>
+    </div>
+
+    <div class="config-panel">
+        <div class="config-row">
+            <label for="minValue">最小值：</label>
+            <input type="number" id="minValue" value="1" min="1">
+        </div>
+        <div class="config-row">
+            <label for="maxValue">最大值：</label>
+            <input type="number" id="maxValue" value="99" min="1">
+        </div>
+    </div>
+
+    <a href="index.html" class="back-link">← 返回控制台</a>
+</div>
+
+<script>
+    // ==== 變數宣告 ====
+    const numberDisplay = document.getElementById('numberDisplay');
+    const generateBtn = document.getElementById('generateBtn');
+    const minValueInput = document.getElementById('minValue');
+    const maxValueInput = document.getElementById('maxValue');
+
+    let MIN_VALUE = 1;
+    let MAX_VALUE = 99;
+
+    // ==== 本地儲存 ====
+    function loadSettings() {
+        const saved = localStorage.getItem('randomNumberSettings');
+        if (saved) {
+            const { min, max } = JSON.parse(saved);
+            MIN_VALUE = min;
+            MAX_VALUE = max;
+        }
+        minValueInput.value = MIN_VALUE;
+        maxValueInput.value = MAX_VALUE;
+    }
+
+    function saveSettings() {
+        const data = { min: MIN_VALUE, max: MAX_VALUE };
+        localStorage.setItem('randomNumberSettings', JSON.stringify(data));
+    }
+
+    // ==== 生成隨機數字 ====
+    function generateRandomNumber() {
+        const min = parseInt(minValueInput.value);
+        const max = parseInt(maxValueInput.value);
+
+        // 驗證輸入
+        if (isNaN(min) || isNaN(max) || min >= max) {
+            alert('請輸入有效的數字範圍，最小值必須小於最大值。');
+            return;
+        }
+
+        // 更新設定
+        MIN_VALUE = min;
+        MAX_VALUE = max;
+        saveSettings();
+
+        // 生成隨機數字
+        const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
+
+        // 分解數字
+        const hundreds = Math.floor(randomNum / 100) % 10;
+        const tens = Math.floor(randomNum / 10) % 10;
+        const ones = randomNum % 10;
+
+        // 滾動動畫
+        animateDigits(ones, tens, hundreds);
+    }
+
+    // ==== 滾動數字動畫 ====
+    function animateDigits(targetOnes, targetTens, targetHundreds) {
+        const hundredsEl = document.getElementById('hundreds');
+        const tensEl = document.getElementById('tens');
+        const onesEl = document.getElementById('ones');
+
+        // 重置為0並移除final class
+        hundredsEl.textContent = '0';
+        tensEl.textContent = '0';
+        onesEl.textContent = '0';
+        hundredsEl.classList.remove('final');
+        tensEl.classList.remove('final');
+        onesEl.classList.remove('final');
+
+        // 先滾動個位
+        let onesCount = 0;
+        const onesInterval = setInterval(() => {
+            onesEl.textContent = onesCount;
+            if (onesCount === targetOnes) {
+                clearInterval(onesInterval);
+                onesEl.classList.add('final');
+                // 然後滾動十位
+                let tensCount = 0;
+                const tensInterval = setInterval(() => {
+                    tensEl.textContent = tensCount;
+                    if (tensCount === targetTens) {
+                        clearInterval(tensInterval);
+                        tensEl.classList.add('final');
+                        // 最後滾動百位
+                        let hundredsCount = 0;
+                        const hundredsInterval = setInterval(() => {
+                            hundredsEl.textContent = hundredsCount;
+                            if (hundredsCount === targetHundreds) {
+                                clearInterval(hundredsInterval);
+                                hundredsEl.classList.add('final');
+                            }
+                            hundredsCount = (hundredsCount + 1) % 10;
+                        }, 100);
+                    }
+                    tensCount = (tensCount + 1) % 10;
+                }, 100);
+            }
+            onesCount = (onesCount + 1) % 10;
+        }, 100);
+    }
+
+    // ==== 事件綁定 ====
+    generateBtn.addEventListener('click', generateRandomNumber);
+
+    // 允許按 Enter 生成
+    [minValueInput, maxValueInput].forEach(inp => {
+        inp.addEventListener('keypress', e => {
+            if (e.key === 'Enter') generateRandomNumber();
+        });
+    });
+
+    // 初始載入
+    loadSettings();
+</script>
+
+</body>
+</html>
