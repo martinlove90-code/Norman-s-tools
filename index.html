@@ -263,16 +263,40 @@
         <p class="footer-text">© 2026 安姆的專屬控制台</p>
     </footer>
 
-     <script>
+<script>
         document.addEventListener('DOMContentLoaded', () => {
             const countDisplay = document.getElementById('visitCount');
-            // 使用你的專屬名稱，不需要 API Key，直接用最簡單的 GET 請求
-            const counterUrl = 'https://api.counterapi.dev/v1/normanyang/dashboard/up';
+            
+            // 官方提供的 V2 Increment (Up) 端點
+            const counterUrl = 'https://api.counterapi.dev/v2/normanyangs-team-3848/first-counter-3848/up';
+            // 請確保這是你正確的 API Key
+            
 
-            fetch(counterUrl)
-                .then(res => res.json())
-                .then(data => countDisplay.innerText = data.count)
-                .catch(err => countDisplay.innerText = "N/A");
+            // 依照官方 curl 指令的格式，使用 GET 請求並帶入 Authorization 標頭
+            fetch(counterUrl, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Accept': 'application/json' // 告訴伺服器我們預期收到 JSON 格式
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`伺服器回應錯誤: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 將回傳結果印在開發者工具(F12)的 Console，方便排解問題
+                console.log("CounterAPI 回傳資料:", data);
+                
+                // 抓取回傳的數字 (視官方格式可能是 count 或 value)
+                countDisplay.innerText = data.count || data.value || data;
+            })
+            .catch(error => {
+                console.error("計數器連線失敗:", error);
+                countDisplay.innerText = "N/A";
+            });
         });
     </script>
 
