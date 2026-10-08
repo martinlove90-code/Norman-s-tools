@@ -29,7 +29,8 @@ if (typeof document !== 'undefined') (() => {
     const meaning = byId('resultMeaning');
     const counts = { sheng: 0, xiao: 0, ku: 0 };
     let angles = [0, 0];
-    const tilts = [-18, 18];
+    // Sprite openings point upward: rotate left clockwise, right counterclockwise.
+    const tilts = [90, -90];
     let animations = [];
     let busy = false;
     let ready = false;
