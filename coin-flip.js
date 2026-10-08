@@ -26,7 +26,7 @@ if (typeof document !== 'undefined') (() => {
     const durationKey = 'coinFlipDurationSeconds';
     const savedDuration = Number(toolStorage.get(durationKey));
     durationInput.value = Number.isFinite(savedDuration) && savedDuration >= 0.5 && savedDuration <= 15
-        ? Math.round(savedDuration * 10) / 10 : 1.9;
+        ? Math.round(savedDuration * 10) / 10 : 2;
 
     function updateDuration() {
         const seconds = Number(durationInput.value).toFixed(1);
