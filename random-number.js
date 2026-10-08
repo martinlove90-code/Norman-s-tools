@@ -36,7 +36,7 @@ if (typeof document !== 'undefined') (() => {
     let animationTimer = null;
     let view = 'inline';
     let title = '隨機亂數產生器';
-    const settingsKey = 'randomNumberSettings';
+    const settingsKey = 'randomNumberBatchSettings';
 
     function saveSettings() {
         toolStorage.set(settingsKey, JSON.stringify({ min: Number(minInput.value), max: Number(maxInput.value),
@@ -156,8 +156,10 @@ if (typeof document !== 'undefined') (() => {
         byId('editTitleBtn').focus();
     });
 
-    // Migrate older min/max-only settings; ignore corrupt or incompatible values.
-    const saved = toolStorage.getJSON(settingsKey);
+    // Restore this tool's preferences; ignore corrupt or incompatible values.
+    // Import prior batch preferences once; subsequent writes use this tool's own key.
+    const legacy = toolStorage.getJSON('randomNumberSettings');
+    const saved = toolStorage.getJSON(settingsKey) ?? (legacy && Number.isInteger(legacy.quantity) ? legacy : null);
     if (saved && validRange(saved.min, saved.max)) {
         minInput.value = saved.min;
         maxInput.value = saved.max;
@@ -170,4 +172,5 @@ if (typeof document !== 'undefined') (() => {
     byId('mainTitle').textContent = `🎲 ${title}`;
     document.title = title;
     applyView();
+    saveSettings();
 })();

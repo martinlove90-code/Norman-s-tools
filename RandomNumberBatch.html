@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隨機亂數產生器</title>
+    <style>
+        .container { width: 100%; max-width: 800px; text-align: center; }
+        .config-panel { display: flex; flex-direction: column; gap: 16px; padding: 20px; }
+        .range-row { display: flex; align-items: end; justify-content: center; flex-wrap: wrap; gap: 12px; }
+        .range-row label { display: flex; flex-direction: column; gap: 6px; text-align: left; flex: 1; min-width: 100px; }
+        .range-row input { width: 100%; }
+        .range-symbol { padding-bottom: 10px; color: var(--text-sub); }
+        .repeat-option { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .repeat-option input { width: 18px; height: 18px; }
+        .config-help { margin: 0; font-size: 0.85rem; }
+        #errorMessage { margin: 0; color: #fda4af; }
+        .result-section { margin-top: 28px; }
+        .result-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+        .result-toolbar h2 { margin: 0; }
+        .view-controls { display: flex; gap: 8px; }
+        #inlineViewBtn, #listViewBtn { padding: 8px 12px; background: #25334b; color: var(--text-main); border: 1px solid var(--theme-border); }
+        #inlineViewBtn[aria-pressed="true"], #listViewBtn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+        #inlineViewBtn:hover, #listViewBtn:hover { background: #34445f; }
+        .number-display { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px 24px; min-height: 120px; max-height: 400px; overflow: auto; padding: 20px; border: 1px solid var(--theme-border); border-radius: 14px; }
+        .number-display.is-empty { color: var(--text-sub); }
+        .result-number { max-width: 100%; overflow-wrap: anywhere; font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 700; font-variant-numeric: tabular-nums; color: #fbbf24; }
+        .number-display.list-view { flex-direction: column; flex-wrap: nowrap; align-items: stretch; justify-content: flex-start; gap: 0; }
+        .list-view .result-number { padding: 8px; font-size: 1.25rem; border-bottom: 1px solid var(--theme-border); }
+        .list-view .result-number:last-child { border-bottom: 0; }
+        .digit { display: inline-block; color: var(--accent); }
+        .digit.final { color: #fbbf24; }
+        #generatedAt { display: block; margin: 14px 0; color: var(--text-sub); font-size: 0.9rem; }
+        .result-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        #titleEditor { margin-top: 16px; padding: 16px; border: 1px solid var(--theme-border); border-radius: 12px; }
+        #titleEditor label { display: block; text-align: left; margin-bottom: 8px; }
+        #titleInput { width: 100%; margin-bottom: 12px; }
+        [hidden] { display: none !important; }
+        @media (max-width: 480px) { .config-panel { padding: 16px; } .range-symbol { display: none; } .number-display { gap: 12px; padding: 16px; } }
+    </style>
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body class="tool-page">
+    <nav class="site-header" aria-label="網站導覽">
+        <a href="index.html" class="site-brand"><span class="brand-mark" aria-hidden="true">✦</span>安姆工具箱</a>
+        <a href="index.html" class="back-link">← 返回控制台</a>
+    </nav>
+    <main class="container">
+        <h1 id="mainTitle">🎲 隨機亂數產生器</h1>
+        <form id="generatorForm" class="config-panel">
+            <div class="range-row">
+                <label for="minValue">最小值<input type="number" id="minValue" value="1" min="1" max="9007199254740991" step="1" required></label>
+                <span class="range-symbol" aria-hidden="true">～</span>
+                <label for="maxValue">最大值<input type="number" id="maxValue" value="10" min="1" max="9007199254740991" step="1" required></label>
+                <span class="range-symbol" aria-hidden="true">×</span>
+                <label for="quantity">產生數量<input type="number" id="quantity" value="5" min="1" max="1000" step="1" required></label>
+            </div>
+            <label class="repeat-option"><input type="checkbox" id="noRepeat" checked>沒有重複項目</label>
+            <p class="config-help">範圍包含最小值與最大值，每次最多產生 1,000 個數字。</p>
+            <p id="errorMessage" role="alert" hidden></p>
+            <button id="generateBtn" type="submit">🎲 產生數字</button>
+        </form>
+        <section class="result-section" aria-labelledby="resultHeading">
+            <div class="result-toolbar">
+                <h2 id="resultHeading">結果</h2>
+                <div class="view-controls" role="group" aria-label="結果顯示方式">
+                    <button id="inlineViewBtn" type="button" aria-pressed="true">橫排</button>
+                    <button id="listViewBtn" type="button" aria-pressed="false">列表</button>
+                </div>
+            </div>
+            <div id="numberDisplay" class="number-display is-empty" aria-live="polite" aria-busy="false">尚未產生數字</div>
+            <time id="generatedAt" hidden></time>
+        </section>
+        <div class="result-actions">
+            <button id="editTitleBtn" type="button" class="btn-update" aria-expanded="false" aria-controls="titleEditor">修改標題</button>
+            <button id="clearResultsBtn" type="button" class="btn-reset">清除所有結果</button>
+        </div>
+        <form id="titleEditor" hidden>
+            <label for="titleInput">自訂標題</label>
+            <input id="titleInput" type="text" maxlength="80" placeholder="隨機亂數產生器">
+            <button type="submit" class="btn-apply">儲存標題</button>
+        </form>
+    </main>
+    <script src="storage.js"></script>
+    <script src="random-number.js"></script>
+</body>
+</html>
