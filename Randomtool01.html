@@ -166,15 +166,21 @@
 
         .main-container { width: 100%; min-width: 0; }
         .wheel-section { width: 100%; max-width: 320px; min-width: 0; }
-        .wheel-container { width: 100%; max-width: 320px; height: auto; aspect-ratio: 1; }
+        .wheel-container { width: 100%; max-width: 500px; height: auto; aspect-ratio: 1; }
+        #wheel { display: block; width: 100%; height: auto; aspect-ratio: 1; }
         .controls { width: 100%; max-width: 350px; min-width: 0; box-sizing: border-box; }
         #result { overflow-wrap: anywhere; }
         .sound-option { display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .sound-option input { width: 18px; height: 18px; }
+        body.tool-page.lucky-wheel-page .main-container { max-width: 1000px; }
+        body.tool-page.lucky-wheel-page .wheel-section { max-width: 550px; padding: 28px 24px 20px; }
+        @media (max-width: 600px) {
+            body.tool-page.lucky-wheel-page .wheel-section { padding: 28px 8px 16px; }
+        }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
-<body class="tool-page">
+<body class="tool-page lucky-wheel-page">
     <nav class="site-header" aria-label="網站導覽">
         <a href="index.html" class="site-brand"><span class="brand-mark" aria-hidden="true">✦</span>安姆工具箱</a>
         <a href="index.html" class="back-link">← 返回控制台</a>
@@ -187,7 +193,7 @@
         <div class="wheel-section">
             <div class="wheel-container">
                 <div class="pointer"></div>
-                <canvas id="wheel" width="400" height="400"></canvas>
+                <canvas id="wheel" width="800" height="800"></canvas>
             </div>
             <button id="spinBtn">開始轉動！</button>
             <label class="sound-option"><input id="soundEnabled" type="checkbox" checked>🔊 開啟音效</label>
@@ -287,6 +293,7 @@
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
             const radius = centerX;
+            const scale = canvas.width / 400;
             const arcSize = (2 * Math.PI) / segments.length;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -299,7 +306,7 @@
                 ctx.moveTo(centerX, centerY);
                 ctx.arc(centerX, centerY, radius, angle, angle + arcSize);
                 ctx.fill();
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 2 * scale;
                 ctx.strokeStyle = "#ffffff";
                 ctx.stroke();
 
@@ -309,13 +316,13 @@
                 ctx.textAlign = "right";
                 ctx.fillStyle = "#fff";
                 
-                let fontSize = segments.length > 10 ? 16 : 20;
+                let fontSize = (segments.length > 10 ? 16 : 20) * scale;
                 ctx.font = `bold ${fontSize}px 'Segoe UI', sans-serif`;
                 
                 let text = segments[i];
                 if (text.length > 12) text = text.substring(0, 11) + "...";
                 
-                ctx.fillText(text, radius - 30, fontSize/3);
+                ctx.fillText(text, radius - 30 * scale, fontSize/3);
                 ctx.restore();
             }
         }
