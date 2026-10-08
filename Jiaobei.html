@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>擲杯・紅色半月筊杯</title>
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        .jiaobei-tool { width: 100%; max-width: 760px; text-align: center; }
+        .jiaobei-tool h1 { margin-bottom: 8px; }
+        .blocks-stage { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 40px 0 12px; }
+        .block-slot { min-width: 0; perspective: 1100px; }
+        .moon-block { position: relative; width: 100%; max-width: 260px; aspect-ratio: 1; margin: auto; transform-style: preserve-3d; }
+        .block-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .block-face img { display: block; width: 100%; height: 100%; object-fit: contain; }
+        .convex-face { transform: rotateX(180deg); }
+        .face-label { margin: 0; color: var(--text-sub); }
+        #jiaobeiResult { min-height: 34px; margin: 24px 0 0; font-size: 1.5rem; font-weight: 700; color: #fbbf24; }
+        #resultMeaning { min-height: 26px; margin: 8px 0 20px; }
+        #throwBtn { width: 100%; max-width: 360px; }
+        .throw-duration { max-width: 360px; margin: 20px auto; text-align: left; }
+        .throw-duration label { display: flex; justify-content: space-between; gap: 12px; }
+        #throwDuration { width: 100%; box-sizing: border-box; padding: 0; margin-top: 12px; }
+        #throwDurationValue { color: var(--accent); }
+        .result-guide { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 24px 0 16px; }
+        .result-guide div { padding: 12px 4px; border: 1px solid var(--theme-border); border-radius: 12px; }
+        .result-guide strong, .result-guide span { display: block; }
+        .result-guide strong { color: var(--text-main); }
+        .result-guide span { font-size: .85rem; color: var(--text-sub); }
+        .result-guide output { display: block; color: var(--accent); font-size: 1.3rem; margin-top: 6px; }
+        .source-link { color: var(--accent); }
+        @media (max-width: 400px) { .blocks-stage { gap: 8px; margin-top: 32px; } .result-guide span { font-size: .75rem; } }
+    </style>
+</head>
+<body class="tool-page">
+    <nav class="site-header" aria-label="網站導覽">
+        <a href="index.html" class="site-brand"><span class="brand-mark" aria-hidden="true">✦</span>安姆工具箱</a>
+        <a href="index.html" class="back-link">← 返回控制台</a>
+    </nav>
+    <main class="container jiaobei-tool">
+        <h1>🌙 擲杯（擲筊）</h1>
+        <p>一對紅色半月筊杯，看看這次落在哪一面。</p>
+        <div class="blocks-stage">
+            <div class="block-slot">
+                <div id="blockOne" class="moon-block" aria-hidden="true">
+                    <div class="block-face"><img src="jiaobei-flat.png" alt=""></div>
+                    <div class="block-face convex-face"><img src="jiaobei-convex.png" alt=""></div>
+                </div>
+                <p id="faceOne" class="face-label">第一片：平面</p>
+            </div>
+            <div class="block-slot">
+                <div id="blockTwo" class="moon-block" aria-hidden="true">
+                    <div class="block-face"><img src="jiaobei-flat.png" alt=""></div>
+                    <div class="block-face convex-face"><img src="jiaobei-convex.png" alt=""></div>
+                </div>
+                <p id="faceTwo" class="face-label">第二片：平面</p>
+            </div>
+        </div>
+        <div id="jiaobeiResult" role="status" aria-live="polite">正在載入筊杯…</div>
+        <p id="resultMeaning">一平一凸：聖杯｜兩平：笑杯｜兩凸：哭杯</p>
+        <button id="throwBtn" type="button" disabled>🌙 擲一次杯</button>
+        <div class="throw-duration">
+            <label for="throwDuration">翻轉時間<output id="throwDurationValue" for="throwDuration">2.0 秒</output></label>
+            <input id="throwDuration" type="range" min="0.5" max="15" step="0.1" value="2" aria-valuetext="2.0 秒">
+        </div>
+        <div class="result-guide" aria-label="結果說明與本次使用統計">
+            <div><strong>聖杯</strong><span>一平一凸・同意</span><output id="shengCount">0 次</output></div>
+            <div><strong>笑杯</strong><span>兩平面・未明確回答</span><output id="xiaoCount">0 次</output></div>
+            <div><strong>哭杯</strong><span>兩凸面・不同意</span><output id="kuCount">0 次</output></div>
+        </div>
+        <p>已擲 <strong id="throwCount">0</strong> 次</p>
+        <button id="resetJiaobeiBtn" type="button" class="btn-reset" disabled>清除統計</button>
+        <p>哭杯亦稱陰筊。判讀參考：<a class="source-link" href="https://www.ht.org.tw/religion207.htm" target="_blank" rel="noopener noreferrer">行天宮擲筊說明</a></p>
+    </main>
+    <script src="storage.js"></script>
+    <script src="tool-audio.js"></script>
+    <script src="jiaobei.js"></script>
+</body>
+</html>
