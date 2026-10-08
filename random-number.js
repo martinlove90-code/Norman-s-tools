@@ -30,6 +30,7 @@ if (typeof document !== 'undefined') (() => {
     const maxInput = byId('maxValue');
     const quantityInput = byId('quantity');
     const noRepeatInput = byId('noRepeat');
+    const sortInput = byId('sortAscending');
     const error = byId('errorMessage');
     const generatedAt = byId('generatedAt');
     let results = [];
@@ -40,12 +41,12 @@ if (typeof document !== 'undefined') (() => {
 
     function saveSettings() {
         toolStorage.set(settingsKey, JSON.stringify({ min: Number(minInput.value), max: Number(maxInput.value),
-            quantity: Number(quantityInput.value), noRepeat: noRepeatInput.checked, view, title }));
+            quantity: Number(quantityInput.value), noRepeat: noRepeatInput.checked, sortAscending: sortInput.checked, view, title }));
     }
 
     function setBusy(busy) {
         generateBtn.disabled = busy;
-        for (const input of [minInput, maxInput, quantityInput, noRepeatInput]) input.disabled = busy;
+        for (const input of [minInput, maxInput, quantityInput, noRepeatInput, sortInput]) input.disabled = busy;
         display.setAttribute('aria-busy', String(busy));
     }
 
@@ -59,7 +60,8 @@ if (typeof document !== 'undefined') (() => {
         display.replaceChildren();
         display.classList.toggle('is-empty', results.length === 0);
         if (results.length === 0) display.textContent = '尚未產生數字';
-        for (const number of results) {
+        const displayedResults = sortInput.checked ? [...results].sort((a, b) => a - b) : results;
+        for (const number of displayedResults) {
             const item = document.createElement('span');
             item.className = 'result-number';
             item.textContent = String(number);
@@ -128,6 +130,7 @@ if (typeof document !== 'undefined') (() => {
         }
     });
 
+    sortInput.addEventListener('change', () => { renderResults(); saveSettings(); });
     for (const [id, mode] of [['inlineViewBtn', 'inline'], ['listViewBtn', 'list']]) {
         byId(id).addEventListener('click', () => { view = mode; applyView(); saveSettings(); });
     }
@@ -168,6 +171,7 @@ if (typeof document !== 'undefined') (() => {
         minInput.value = saved.min;
         maxInput.value = saved.max;
         noRepeatInput.checked = typeof saved.noRepeat === 'boolean' ? saved.noRepeat : true;
+        sortInput.checked = saved.sortAscending === true;
         const quantity = Number.isInteger(saved.quantity) && saved.quantity >= 1 && saved.quantity <= 1000 ? saved.quantity : 5;
         quantityInput.value = noRepeatInput.checked ? Math.min(quantity, saved.max - saved.min + 1) : quantity;
         view = saved.view === 'list' ? 'list' : 'inline';

@@ -56,6 +56,7 @@
                 <label for="quantity">產生數量<input type="number" id="quantity" value="5" min="1" max="1000" step="1" required></label>
             </div>
             <label class="repeat-option"><input type="checkbox" id="noRepeat" checked>沒有重複項目</label>
+            <label class="repeat-option"><input type="checkbox" id="sortAscending">自動由小排到大</label>
             <p class="config-help">範圍包含最小值與最大值，每次最多產生 1,000 個數字。</p>
             <p id="errorMessage" role="alert" hidden></p>
             <button id="generateBtn" type="submit">🎲 產生數字</button>
