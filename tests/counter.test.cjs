@@ -67,6 +67,14 @@ test('local server serves browser assets and refuses environment, repository and
     try {
         const base = `http://127.0.0.1:${server.address().port}`;
         for (const asset of ['/', '/index.html', '/theme.css', '/storage.js']) assert.equal((await fetch(base + asset)).status, 200);
+        const image = await fetch(base + '/coin-10-heads.png');
+        assert.equal(image.status, 200);
+        assert.equal(image.headers.get('content-type'), 'image/png');
+        const bytes = new Uint8Array(await image.arrayBuffer());
+        assert.deepEqual([...bytes.slice(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
+        const head = await fetch(base + '/coin-10-tails.png', { method: 'HEAD' });
+        assert.equal(head.status, 200);
+        assert.equal((await head.arrayBuffer()).byteLength, 0);
         for (const privateFile of ['/.env', '/.env.example', '/.git/config', '/server.cjs', '/api/visits.js', '/%2eenv']) assert.equal((await fetch(base + privateFile)).status, 404);
         assert.equal((await fetch(base + '/api/visits')).status, 405);
     } finally { await new Promise(resolve => server.close(resolve)); }

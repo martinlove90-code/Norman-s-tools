@@ -5,8 +5,8 @@ const visits = require('./api/visits.js');
 
 // Only root-level browser assets are public. Environment files and API source stay private.
 const root = __dirname;
-const publicFiles = new Set(fs.readdirSync(root).filter(name => /\.(html|css|js)$/.test(name)));
-const contentTypes = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'application/javascript; charset=utf-8' };
+const publicFiles = new Set(fs.readdirSync(root).filter(name => /\.(html|css|js|png)$/.test(name)));
+const contentTypes = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.png': 'image/png' };
 
 function createServer() {
     return http.createServer(async (request, response) => {

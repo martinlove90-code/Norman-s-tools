@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>擲硬幣・新臺幣 10 元</title>
+    <link rel="stylesheet" href="theme.css">
+    <style>
+        .coin-tool { width: 100%; max-width: 640px; text-align: center; }
+        .coin-tool h1 { margin-bottom: 8px; }
+        .coin-stage { height: 350px; display: grid; place-items: center; perspective: 1100px; position: relative; }
+        .coin-stage::after { content: ''; position: absolute; bottom: 24px; width: 150px; height: 18px; border-radius: 50%; background: #020617; opacity: .5; filter: blur(8px); }
+        .coin { position: relative; width: min(260px, 100%); aspect-ratio: 1; transform-style: preserve-3d; z-index: 1; }
+        .coin-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .coin-face img { display: block; width: 100%; height: 100%; object-fit: contain; }
+        .coin-back { transform: rotateX(180deg); }
+        #coinResult { min-height: 32px; margin: 0 0 16px; font-size: 1.25rem; font-weight: 700; color: #fbbf24; }
+        #tossBtn { width: 100%; max-width: 360px; }
+        .coin-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 24px 0 16px; }
+        .coin-stats div { padding: 12px 4px; border: 1px solid var(--theme-border); border-radius: 12px; color: var(--text-sub); }
+        .coin-stats strong { display: block; font-size: 1.5rem; color: var(--text-main); }
+        @media (max-width: 400px) { .coin-stage { height: 290px; } .coin { width: 220px; } }
+    </style>
+</head>
+<body class="tool-page">
+    <nav class="site-header" aria-label="網站導覽">
+        <a href="index.html" class="site-brand"><span class="brand-mark" aria-hidden="true">✦</span>安姆工具箱</a>
+        <a href="index.html" class="back-link">← 返回控制台</a>
+    </nav>
+    <main class="container coin-tool">
+        <h1>🪙 擲硬幣</h1>
+        <p>新臺幣 10 元｜正面：人像・反面：10 圓</p>
+        <div class="coin-stage" aria-hidden="true">
+            <div id="coin" class="coin">
+                <div class="coin-face"><img src="coin-10-heads.png" alt="" width="1254" height="1254"></div>
+                <div class="coin-face coin-back"><img src="coin-10-tails.png" alt="" width="1254" height="1254"></div>
+            </div>
+        </div>
+        <div id="coinResult" role="status" aria-live="polite">正在載入硬幣…</div>
+        <button id="tossBtn" type="button" disabled>🪙 擲一次硬幣</button>
+        <div class="coin-stats" aria-label="本次使用統計">
+            <div>擲幣次數<strong id="totalCount">0</strong></div>
+            <div>正面<strong id="headsCount">0</strong></div>
+            <div>反面<strong id="tailsCount">0</strong></div>
+        </div>
+        <button id="resetCoinBtn" type="button" class="btn-reset" disabled>清除統計</button>
+        <p>每次正反面機率各為 50%。</p>
+    </main>
+    <script src="storage.js"></script>
+    <script src="tool-audio.js"></script>
+    <script src="coin-flip.js"></script>
+</body>
+</html>
