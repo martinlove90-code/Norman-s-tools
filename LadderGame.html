@@ -215,8 +215,14 @@
         .back-link:hover { text-decoration: underline; }
 
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
-<body>
+<body class="tool-page">
+    <nav class="site-header" aria-label="網站導覽">
+        <a href="index.html" class="site-brand"><span class="brand-mark" aria-hidden="true">✦</span>安姆工具箱</a>
+        <a href="index.html" class="back-link">← 返回控制台</a>
+    </nav>
+
 
     <h1>🪜 命運爬梯子</h1>
 
@@ -244,10 +250,10 @@
             </label>
 
             <button id="generateBtn" class="btn-generate">重新生成梯子</button>
-            <a href="index.html" class="back-link">← 返回控制台</a>
         </div>
     </div>
 
+    <script src="storage.js"></script>
     <script>
         const canvas = document.getElementById('ladderCanvas');
         const ctx = canvas.getContext('2d');
@@ -271,8 +277,8 @@
 
         // 讀取本地儲存的選項
         function loadSavedOptions() {
-            const savedOptions = localStorage.getItem(STORAGE_KEY_OPTIONS);
-            const savedBlindMode = localStorage.getItem(STORAGE_KEY_BLIND_MODE);
+            const savedOptions = toolStorage.get(STORAGE_KEY_OPTIONS);
+            const savedBlindMode = toolStorage.get(STORAGE_KEY_BLIND_MODE);
             
             if (savedOptions !== null) {
                 optionsInput.value = savedOptions;
@@ -285,8 +291,8 @@
 
         // 儲存選項到本地儲存
         function saveOptions() {
-            localStorage.setItem(STORAGE_KEY_OPTIONS, optionsInput.value);
-            localStorage.setItem(STORAGE_KEY_BLIND_MODE, blindModeCheckbox.checked);
+            toolStorage.set(STORAGE_KEY_OPTIONS, optionsInput.value);
+            toolStorage.set(STORAGE_KEY_BLIND_MODE, blindModeCheckbox.checked);
         }
 
         const paddingTop = 20;
@@ -302,17 +308,18 @@
             if (isAnimating) return; 
             
             const rawText = optionsInput.value;
-            items = rawText.split('\n').map(item => item.trim()).filter(item => item !== '');
+            let nextItems = rawText.split('\n').map(item => item.trim()).filter(item => item !== '');
             
-            if (items.length < 2) {
+            if (nextItems.length < 2) {
                 alert("至少需要輸入 2 個選項喔！");
                 return;
             }
-            if (items.length > 8) {
+            if (nextItems.length > 8) {
                 alert("為了手機版畫面美觀，已自動為您截取前 8 個選項！");
-                items = items.slice(0, 8);
+                nextItems = nextItems.slice(0, 8);
             }
 
+            items = nextItems;
             resizeCanvas(); 
 
             resultDiv.innerText = "";
@@ -328,7 +335,8 @@
                 const currentX = spacing / 2 + i * spacing;
                 colXs.push(currentX);
 
-                const btn = document.createElement('div');
+                const btn = document.createElement('button');
+                btn.type = 'button';
                 btn.className = 'top-btn';
                 btn.innerText = i + 1;
                 

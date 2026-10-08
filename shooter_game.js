@@ -16,14 +16,19 @@ function resizeCanvas() {
     if (height > maxHeight) height = maxHeight;
     
     // Ensure minimum size
-    if (width < 300) width = 300;
+    if (width < 100) width = 100;
     if (height < 200) height = 200;
     
     canvas.width = width;
     canvas.height = height;
+    if (player) {
+        player.x = Math.max(0, Math.min(player.x, canvas.width - player.width));
+        player.y = canvas.height - player.height;
+    }
 }
 
-// Initialize canvas size
+// The first resize runs before the player is created.
+let player = null;
 resizeCanvas();
 
 // Update canvas size when window is resized
@@ -38,8 +43,8 @@ let lastTime = 0;
 let gameLoopInterval = null; // declare loop interval variable
 
 // Player
-let player = {
-    x: canvas.width / 2,
+player = {
+    x: (canvas.width - 50) / 2,
     y: canvas.height - 50,
     width: 50,
     height: 50,
@@ -84,7 +89,7 @@ function drawEnemy(enemy) {
 
 // ==== Game logic functions ====
 function updatePlayer(deltaTime) {
-    if (player.x + player.width < 0) player.x = 0;
+    if (player.x < 0) player.x = 0;
     if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
     drawPlayer(); // render the player emoji each frame
 }
@@ -111,7 +116,7 @@ function checkCollisions() {
 
     bullets.forEach((bullet, bIdx) => {
         enemies.forEach((enemy, eIdx) => {
-            if (!enemiesHit.has(eIdx) && checkAABBCollision(bullet, enemy)) {
+            if (!bulletsHit.has(bIdx) && !enemiesHit.has(eIdx) && checkAABBCollision(bullet, enemy)) {
                 score += 10;
                 enemiesHit.add(eIdx);
                 bulletsHit.add(bIdx);
@@ -152,9 +157,10 @@ function updateLivesDisplay() {
 
 // ==== Game loop ====
 function gameLoop(timestamp) {
-    if (isGameOver || isPaused) return; // stop updates when game over or paused
+    gameLoopInterval = null;
+    if (!isGameRunning || isGameOver || isPaused) return;
 
-    const deltaTime = timestamp - lastTime || 0;
+    const deltaTime = Math.max(0, Math.min(timestamp - lastTime, 50));
     lastTime = timestamp;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -170,7 +176,9 @@ function gameLoop(timestamp) {
     updateScoreDisplay();
     updateLivesDisplay();
 
-    gameLoopInterval = requestAnimationFrame(gameLoop);
+    if (isGameRunning && !isGameOver && !isPaused) {
+        gameLoopInterval = requestAnimationFrame(gameLoop);
+    }
 }
 
 // ==== Enemy spawning ====
@@ -193,69 +201,65 @@ function spawnEnemy(timestamp) {
 }
 
 // ==== Input handling ====
-function setKeyState(code, state) {
-    keys[code] = state;
-    // If the key is Space, manage auto-fire interval
-    if (code === 'Space') {
-        if (state && !bulletIntervalId) {
-            bulletIntervalId = setInterval(() => {
-                bullets.push({
-                    x: player.x + player.width / 2 - 2,
-                    y: player.y - 20,
-                    width: 4,
-                    height: 10,
-                    speed: 10
-                });
-            }, BULLET_INTERVAL);
-        } else if (!state && bulletIntervalId) {
-            clearInterval(bulletIntervalId);
-            bulletIntervalId = null;
-        }
+function stopFiring() {
+    if (bulletIntervalId !== null) clearInterval(bulletIntervalId);
+    bulletIntervalId = null;
+}
+
+function syncFiring() {
+    if (!isGameRunning || isPaused || isGameOver || !(keys.Space || fireLatched)) {
+        stopFiring();
+        return;
     }
+    if (bulletIntervalId !== null) return;
+    bulletIntervalId = setInterval(() => {
+        bullets.push({ x: player.x + player.width / 2 - 2, y: player.y - 20,
+            width: 4, height: 10, speed: 10 });
+    }, BULLET_INTERVAL);
+}
+
+function setKeyState(code, state) {
+    if (state && !isGameRunning) return;
+    keys[code] = state;
+    if (code === 'Space') syncFiring();
 }
 
 // 處理玩家的左右移動 (缺失函式補上)
 function handlePlayerMovement(deltaTime) {
     if (keys['ArrowLeft'] || keys['KeyA']) {
-        player.x -= player.speed;
+        player.x -= player.speed * deltaTime / (1000 / 60);
     }
     if (keys['ArrowRight'] || keys['KeyD']) {
-        player.x += player.speed;
+        player.x += player.speed * deltaTime / (1000 / 60);
     }
 }
 
 // Handle virtual button presses (mobile)
 function setupVirtualButtons() {
-    const btnLeft = document.getElementById('btn-left');
-    const btnRight = document.getElementById('btn-right');
-
-    // Left button
-    btnLeft.addEventListener('mousedown', () => setKeyState('ArrowLeft', true));
-    btnLeft.addEventListener('mouseup', () => setKeyState('ArrowLeft', false));
-    btnLeft.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        setKeyState('ArrowLeft', true);
-    });
-    btnLeft.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        setKeyState('ArrowLeft', false);
-    });
-
-    // Right button
-    btnRight.addEventListener('mousedown', () => setKeyState('ArrowRight', true));
-    btnRight.addEventListener('mouseup', () => setKeyState('ArrowRight', false));
-    btnRight.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        setKeyState('ArrowRight', true);
-    });
-    btnRight.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        setKeyState('ArrowRight', false);
-    });
+    for (const [id, code] of [['btn-left', 'ArrowLeft'], ['btn-right', 'ArrowRight']]) {
+        const button = document.getElementById(id);
+        button.addEventListener('pointerdown', event => {
+            event.preventDefault();
+            button.setPointerCapture(event.pointerId);
+            setKeyState(code, true);
+        });
+        for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+            button.addEventListener(type, () => setKeyState(code, false));
+        }
+    }
 }
 
 // ==== Game initialization ====
 function initializeGame() {
+    cancelAnimationFrame(gameLoopInterval);
+    stopFiring();
+    keys = {};
+    fireLatched = false;
+    player.x = (canvas.width - player.width) / 2;
+    player.y = canvas.height - player.height;
+    document.getElementById('pause-button').textContent = '暫停';
+    fireButton.textContent = '發射';
+    fireButton.setAttribute('aria-pressed', 'false');
     // Reset game state
     score = 0;
     lives = 3;
@@ -268,90 +272,63 @@ function initializeGame() {
     speedBoost = 0;
     lastTime = performance.now();
 
-    // Clear any existing intervals
-    if (bulletIntervalId) {
-        clearInterval(bulletIntervalId);
-        bulletIntervalId = null;
-    }
-
-    // Start auto-fire (bullet will be continuously created while Space is pressed)
-    // Initialize game loop
+    updateScoreDisplay();
+    updateLivesDisplay();
     gameLoopInterval = requestAnimationFrame(gameLoop);
-    console.log("遊戲初始化完成，請在畫布上觀察效果。");
 }
 
 // ==== Fire button handling ====
 const fireButton = document.getElementById('fire-button');
-if (fireButton) {
-    // Toggle firing state on click/touch
-    fireButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        // Toggle Space key state
-        setKeyState('Space', !keys['Space']);
-    });
-    
-    // Touch events - also toggle
-    fireButton.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        // Toggle Space key state
-        setKeyState('Space', !keys['Space']);
-    });
-    
-    // Prevent default touch behavior
-    fireButton.addEventListener('touchend', (e) => {
-        e.preventDefault();
-    });
-}
+let fireLatched = false;
+fireButton.setAttribute('aria-pressed', 'false');
+fireButton.addEventListener('click', event => {
+    event.preventDefault();
+    if (!isGameRunning || isPaused) return;
+    fireLatched = !fireLatched;
+    fireButton.textContent = fireLatched ? '停止' : '發射';
+    fireButton.setAttribute('aria-pressed', String(fireLatched));
+    syncFiring();
+});
 
 // ==== Pause toggle ====
+let pausedAt = 0;
 function togglePause() {
+    if (!isGameRunning || isGameOver) return;
     isPaused = !isPaused;
-    const pauseBtn = document.getElementById('pause-button');
-    pauseBtn.textContent = isPaused ? '繼續' : '暫停';
+    document.getElementById('pause-button').textContent = isPaused ? '繼續' : '暫停';
     if (isPaused) {
-        // Stop game loop and bullet interval when paused
+        pausedAt = performance.now();
         cancelAnimationFrame(gameLoopInterval);
-        if (bulletIntervalId) {
-            clearInterval(bulletIntervalId);
-            bulletIntervalId = null;
-        }
+        gameLoopInterval = null;
     } else {
-        // Resume game
+        const now = performance.now();
+        lastSpawnTime += now - pausedAt;
+        lastTime = now;
         gameLoopInterval = requestAnimationFrame(gameLoop);
     }
+    syncFiring();
 }
 
 // ==== Game over handling ====
 function endGame() {
+    if (isGameOver) return;
     isGameOver = true;
     isGameRunning = false;
-    
-    // Stop game loop
-    cancelAnimationFrame(gameLoopInterval);
-    
-    // Clear bullet interval
-    if (bulletIntervalId) {
-        clearInterval(bulletIntervalId);
-        bulletIntervalId = null;
-    }
-    
-    // Show game over message
-    alert(`遊戲結束！得分: ${score}`);
-    
-    // Reset start screen
-    const startScreen = document.getElementById('start-screen');
-    const startBtn = document.getElementById('start-button');
-    const pauseBtn = document.getElementById('pause-button');
-    
-    if (startScreen) startScreen.style.display = 'block';
-    if (startBtn) startBtn.disabled = false;
-    if (pauseBtn) pauseBtn.disabled = true;
-    
-    // Reset game state
-    score = 0;
-    lives = 3;
-    isGameOver = false;
     isPaused = false;
+    cancelAnimationFrame(gameLoopInterval);
+    gameLoopInterval = null;
+    stopFiring();
+    keys = {};
+    fireLatched = false;
+    fireButton.textContent = '發射';
+    fireButton.setAttribute('aria-pressed', 'false');
+    updateScoreDisplay();
+    updateLivesDisplay();
+    document.getElementById('start-screen').style.display = 'block';
+    document.getElementById('start-button').disabled = false;
+    document.getElementById('pause-button').disabled = true;
+    document.getElementById('pause-button').textContent = '暫停';
+    alert(`遊戲結束！得分: ${score}`);
 }
 
 // ==== Hide start screen and auto-start ====
@@ -378,12 +355,19 @@ document.addEventListener('DOMContentLoaded', () => {
 // Setup virtual direction buttons
 setupVirtualButtons();
 
-// Add keyboard event listeners for physical keys
-window.addEventListener('keydown', (e) => {
-    setKeyState(e.code, true);
+// Handle only game keys; do not scroll the page while playing.
+const gameKeys = new Set(['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD', 'Space']);
+window.addEventListener('keydown', event => {
+    if (!gameKeys.has(event.code) || !isGameRunning) return;
+    event.preventDefault();
+    setKeyState(event.code, true);
 });
-
-window.addEventListener('keyup', (e) => {
-    setKeyState(e.code, false);
+window.addEventListener('keyup', event => {
+    if (gameKeys.has(event.code)) setKeyState(event.code, false);
+});
+window.addEventListener('blur', () => {
+    keys = {};
+    if (isGameRunning && !isPaused) togglePause();
+    else syncFiring();
 });
 });

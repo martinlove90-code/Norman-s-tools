@@ -5,7 +5,7 @@
 
 ## 🌟 專案特色 (Features)
 
-目前系統已上線 9 款實用的隨機互動工具，所有工具皆具備**流暢的動畫特效**與**完美的手機版 RWD 適配**：
+目前系統已上線 9 款實用的隨機互動工具，所有工具皆具備**動畫特效**與**手機版響應式排版**：
 
 1. **🎯 好運抽獎轉盤 (`Randomtool01.html`)**
     - 快速輸入選項，交給機率決定下一步。
@@ -34,8 +34,9 @@
 
 6. **🎲 隨機數字抽取器 (`RandomNumber.html`)**
     - 輸入最小值(x)和最大值(y)，隨機生成一個正整數。
+    - 支援 1～9007199254740991 的整數範圍，完整顯示所有位數；最小值可等於最大值。
     - x和y可以手動調整，並自動儲存至 localStorage。
-    - 具備拉霸機式的滾動動畫特效，按位確定後變色。
+    - 具備拉霸機式的滾動動畫特效，按位確定後變色；動畫期間禁止重複生成。
 
 7. **🎯 點擊翻牌洞洞樂 (`PunchBoardClick.html`)**
     - 點擊卡片翻牌尋找中獎卡片！
@@ -52,15 +53,17 @@
     - 支援觸控雙手操作，左右移動按鈕位於螢幕下方。
     - 點擊發射按鈕切換連續發射/停止狀態。
     - **已修復**：解決了CANVAS_WIDTH和CANVAS_HEIGHT未定義的運行錯誤.
+    - 暫停後可恢復連射，遊戲結束保留最後分數，重新開始會重設狀態。
 
 ## 🛠️ 技術棧 (Tech Stack)
 
-本專案採用最輕量、無依賴的純前端技術構建，無需任何後端伺服器即可完美運行：
+工具本身採用無框架依賴的純前端技術，可直接使用靜態網頁；目前公開雲端計數器也可直接呼叫，需要認證時才使用後端代理。
+
 - **HTML5**: 語義化架構。
 - **CSS3**: 使用 CSS Grid/Flexbox 進行 RWD 排版，並結合 `@keyframes` 與 `transition` 實現大量 UI 動畫。
 - **JavaScript (ES6+)**: 負責核心邏輯、Canvas 畫布渲染 (轉盤與梯子繪製) 與 `requestAnimationFrame` 物理動畫運算。
 - **Data Storage**: 使用 `window.localStorage` 實現無資料庫的本地個人化記憶功能。
-- **API Integration**: 首頁整合 `CounterAPI`，實現跨裝置的真實雲端造訪計數器。
+- **Visit Counter**: 首頁直接串接公開 CounterAPI V2 雲端計數器，連線失敗時改顯示本機啟動次數。
 
 ## 📖 開發與維護指南 (Maintenance Guide)
 
@@ -71,10 +74,12 @@
 
 ### 2. 如何擴充新的工具模組？
 如果你寫了一個新的網頁工具（例如 `NewTool.html`），請依照以下步驟將它整合進控制台：
+
 1. 將 `NewTool.html` 放入專案根目錄。
-2. 在新工具的 UI 中，加入返回首頁的按鈕：`<a href="index.html" class="back-link">← 返回控制台</a>`
-3. 打開 `index.html`，找到 `<div class="grid-container">`。
-4. 將其中一個「建置中」的區塊替換為新工具的連結與文案：
+2. 在 `<head>` 的本地樣式之後載入 `<link rel="stylesheet" href="theme.css">`，並使用 `<body class="tool-page">`。
+3. 參考現有工具，在頂部加入 `.site-header` 導覽列與返回按鈕：`<a href="index.html" class="back-link">← 返回控制台</a>`。需要記憶設定時，在工具腳本之前載入 `storage.js`。
+4. 打開 `index.html`，找到 `<div class="grid-container">`。
+5. 新增工具的連結卡片與文案：
    ```html
    <a href="NewTool.html" class="card">
        <span class="status-badge status-active">Online</span>
@@ -82,3 +87,102 @@
        <h2>新工具名稱</h2>
        <p>這裡寫上新工具的簡介...</p>
    </a>
+   ```
+
+### 3. 首頁計數器
+首頁已設定以下公開 CounterAPI V2 加一端點，每次載入首頁會呼叫一次：
+
+```text
+https://api.counterapi.dev/v2/normanyangs-team-3848/first-counter-3848/up
+```
+
+2026-10-08 實測此計數器允許不帶金鑰的 GET 讀取與加一請求，並回傳
+`Access-Control-Allow-Origin: *`，因此 GitHub Pages 可直接使用。
+`index.html` 的 `counterEndpoint` 與 `counterMethod = 'GET'` 已完成設定。
+首頁從 V2 回應的 `data.up_count - data.down_count` 取得淨計數，顯示「系統總啟動次數」。
+
+服務有快取緩衝，加一成功後回傳的數字可能短暫落後；前端顯示服務實際回傳的值，
+不自行推算或重試加一。若 5 秒內無回應、連線失敗或資料格式錯誤，自動改顯示
+localStorage 記錄的「本機啟動次數」；禁止儲存時顯示「本次啟動」。
+公開端點不需要將 API 金鑰放入 HTML。金鑰只存放於已忽略的本機 `.env`，供可選的代理模式使用。
+官方文件：https://docs.counterapi.dev/api/endpoints/v2/
+
+#### 可選的認證代理程式
+
+目前公開計數器不需要部署代理。若日後改為需要認證的計數器，可使用以下程式：
+
+- `api/visits.js`：POST 計數端點，以伺服器環境變數中的金鑰呼叫 CounterAPI V2，回傳 `{ "count": 123 }`。支援 Vercel Node 函式。
+- `server.cjs`：本機 Node.js 伺服器，提供靜態網頁與 `/api/visits`；不提供 `.env`、Git 資料或後端原始碼的下載。
+- `.env.example`：設定範本。本機金鑰使用 `.env` 保存，已由 `.gitignore` 與 `.vercelignore` 排除。
+- `tests/counter.test.cjs`：代理程式的認證、錯誤處理、CORS 與私密檔案隔離測試，可執行 `node --test tests/counter.test.cjs`。
+- `tests/frontend-counter.test.cjs`：首頁的公開端點、V2 格式、零值、逾時與本機備援測試，不呼叫正式加一端點。兩組一起執行：`node --test tests/counter.test.cjs tests/frontend-counter.test.cjs`。
+
+環境變數：
+
+| 名稱 | 用途 |
+| --- | --- |
+| `COUNTERAPI_API_KEY` | CounterAPI API 金鑰，只設定於本機或代理服務的環境變數 |
+| `COUNTERAPI_WORKSPACE` | 官方 API Endpoint 中的 workspace 識別名稱，可能與面板顯示名稱不同 |
+| `COUNTERAPI_COUNTER` | 官方 API Endpoint 中的 counter 識別名稱 |
+| `COUNTER_SITE_ORIGIN` | 允許跨來源呼叫的網站 origin，例如 `https://martinlove90-code.github.io`，不包含專案路徑 |
+| `PORT` | 本機伺服器埠號，預設 `3000` |
+
+本機測試需 Node.js 22 以上。完成 `.env` 設定後，執行 `node server.cjs`，
+將首頁的 `counterEndpoint` 設為 `/api/visits`，並將 `counterMethod` 改為 `'POST'`，
+再開啟 `http://127.0.0.1:3000`。
+
+網站目前使用 GitHub Pages，不能在 Pages 上執行此後端。若要使用認證代理，需先將
+`api/visits.js` 部署到支援 Node 函式的服務，設定上述環境變數，再把首頁的
+`counterEndpoint` 改為該服務的完整 HTTPS 網址，並將 `counterMethod` 改為 `'POST'`。
+API 識別名稱已確認為 `normanyangs-team-3848` 與 `first-counter-3848`；代理目前未部署。
+
+### 4. 相容網址與儲存
+`LadderGame.html.html` 保留為舊網址入口，自動導向 `LadderGame.html`。
+`storage.js` 提供安全的讀寫介面；儲存資料損壞或瀏覽器禁止儲存時，工具使用預設值繼續運作。
+隨機數字工具支援 1～9007199254740991 的整數，動畫期間會鎖定生成操作。
+
+### 5. 共用視覺樣式
+首頁與全部工具共用 `theme.css`，統一深色背景、藍紫色主按鈕、面板、字體與導覽列。
+每個頁面的本地樣式保留遊戲排版；`theme.css` 在其後載入，負責共用外觀。
+調整全站顏色與圓角時，優先修改 `theme.css` 的 CSS 變數。
+子網頁的「返回控制台」按鈕統一位於頂部導覽列右側。
+
+## 📝 修正紀錄
+
+### 2026-10-08：功能修復、返回導覽與風格統一
+
+**功能修復**
+
+- 首頁：移除未宣告的 `apiKey` 與已停用的 CounterAPI V1 呼叫。預設顯示「本機啟動次數」，儲存不可用時顯示「本次啟動」；已保留可設定的雲端後端端點與逾時、錯誤備援。
+- 射擊遊戲：修正遊戲結束後仍排程、重開時重複迴圈、暫停後連射未恢復與時間差跳動。結束時保留最後分數，重開時重設玩家、分數及輸入狀態。
+- 射擊控制：修正玩家左側越界與縮放後跑出畫布；使用 Pointer Events 處理方向按鈕的放開、取消與指標捕捉，視窗失焦時暫停遊戲。
+- 隨機數字：完整顯示千位以上數字，拒絕非正整數與超出安全整數範圍的輸入；單一計時器控制動畫，避免連點或 Enter 造成動畫重疊。
+- 儲存處理：新增 `storage.js`，容忍儲存不可用與 JSON 損壞。洞洞樂讀取存檔時驗證卡片總數、中獎數與文字，防止中獎數超過總數造成無限迴圈。
+- 爬梯子：先驗證新選項，再更新目前資料；驗證失敗時保留可使用的舊梯子，避免結果顯示 `undefined`。
+- 文字輸入：機率轉盤名稱與洞洞樂開獎文字改用 DOM 屬性或 `textContent` 設定，避免引號或 HTML 文字破壞頁面結構。
+- 文件：補齊 README 程式碼區塊的結束標記，更新計數器、儲存與新增工具的維護說明。
+
+**導覽與視覺**
+
+- 全部 9 個子網頁均提供「← 返回控制台」按鈕，固定前往 `index.html`；其行為不是瀏覽器歷史紀錄的上一頁。
+- 舊網址 `LadderGame.html.html` 保留並自動導向目前維護的 `LadderGame.html`。
+- 新增 `theme.css`，統一首頁與工具的深色背景、藍紫色主按鈕、字體、面板、輸入框、圓角與鍵盤焦點樣式；保留中獎及結果提示的顏色區別。
+- 共用頂部導覽列，返回按鈕統一置於右側；調整工具標題與首頁名稱一致。
+- 修正首頁、轉盤與大樂透等頁面的窄螢幕溢出；轉盤設定區取消巢狀捲動，並支援減少動態效果的系統偏好。
+
+**驗證結果與限制**
+
+- Edge 瀏覽器 77 項功能與載入檢查通過，涵蓋完整數字顯示、輸入驗證、損壞存檔、中獎張數、重置、梯子結果、射擊暫停／結束／重開及禁止儲存的情境。
+- 返回按鈕確認階段完成 31 項檢查，包含舊梯子網址與射擊遊戲進行中的返回操作。
+- 統一風格後，再完成 30 項頁面／視窗寬度檢查；1280、375、320 像素寬度的共用樣式、排版與返回按鈕均通過，未發現未捕捉的頁面錯誤。
+- JavaScript 語法、本地連結與資源路徑、`git diff --check` 均通過。
+- 雲端計數初期使用本機備援；後續已確認公開 V2 端點並完成首頁串接，詳見下方紀錄。
+
+### 2026-10-08：CounterAPI V2 雲端計數串接
+
+- 依 API Usage 畫面確認正式識別名稱：`normanyangs-team-3848`／`first-counter-3848`，取代先前無法呼叫的顯示名稱。
+- 實測無金鑰與有金鑰的讀取請求均回傳 HTTP 200；公開加一請求也成功，且允許跨來源呼叫，因此首頁可直接在 GitHub Pages 使用。
+- 更新首頁端點、GET 呼叫與 V2 回應解析，保留零值、錯誤、逾時與本機儲存不可用時的處理。
+- 金鑰保留於 Git 與 Vercel 忽略的 `.env`；`api/visits.js` 與 `server.cjs` 作為需要認證時的可選代理方案。
+- 真實服務驗證僅送出一次加一請求；前端回歸測試使用模擬回應，避免測試反覆增加正式計數。
+- 8 項 Node 測試通過；Edge 驗證雲端顯示、失敗備援、零值、每次載入僅呼叫一次且不傳送金鑰。瀏覽器對真實服務的唯讀請求也通過，確認跨來源讀取可用。

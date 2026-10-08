@@ -163,9 +163,21 @@
             min-height: 40px;
             text-align: center;
         }
+
+        .main-container { width: 100%; min-width: 0; }
+        .wheel-section { width: 100%; max-width: 320px; min-width: 0; }
+        .wheel-container { width: 100%; max-width: 320px; height: auto; aspect-ratio: 1; }
+        .controls { width: 100%; max-width: 350px; min-width: 0; box-sizing: border-box; }
+        #result { overflow-wrap: anywhere; }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
-<body>
+<body class="tool-page">
+    <nav class="site-header" aria-label="網站導覽">
+        <a href="index.html" class="site-brand"><span class="brand-mark" aria-hidden="true">✦</span>安姆工具箱</a>
+        <a href="index.html" class="back-link">← 返回控制台</a>
+    </nav>
+
 
     <h1 id="mainTitle">✨ 載入中... ✨</h1>
 
@@ -188,10 +200,10 @@
             <textarea id="optionsInput"></textarea>
             <button id="updateBtn" class="btn-update">更新選項</button>
             
-            <a href="index.html" class="back-link">← 返回控制台</a>
         </div>
     </div>
 
+    <script src="storage.js"></script>
     <script>
         const mainTitle = document.getElementById('mainTitle');
         const titleInput = document.getElementById('titleInput');
@@ -215,8 +227,8 @@
 
         // 讀取本地記憶
         function loadSavedData() {
-            const savedTitle = localStorage.getItem('wheel_title');
-            const savedOptions = localStorage.getItem('wheel_options');
+            const savedTitle = toolStorage.get('wheel_title');
+            const savedOptions = toolStorage.get('wheel_options');
 
             if (savedTitle !== null) {
                 titleInput.value = savedTitle;
@@ -239,7 +251,7 @@
             mainTitle.innerText = `✨ ${dateString} ${customName} ✨`;
 
             // 即時存檔標題
-            localStorage.setItem('wheel_title', titleInput.value);
+            toolStorage.set('wheel_title', titleInput.value);
         }
 
         // --- 轉盤更新與存檔邏輯 ---
@@ -256,7 +268,7 @@
             drawWheel();
 
             // 即時存檔選項內容
-            localStorage.setItem('wheel_options', rawText);
+            toolStorage.set('wheel_options', rawText);
         }
 
         function drawWheel() {

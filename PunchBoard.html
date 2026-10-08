@@ -220,9 +220,28 @@
             transition: color 0.2s;
         }
         .back-link:hover { color: #7dd3fc; text-decoration: underline; }
+
+        .container { box-sizing: border-box; min-width: 0; }
+        .config-row input { min-width: 0; box-sizing: border-box; }
+        @media (max-width: 480px) {
+            .container { padding: 24px 16px; }
+            h1 { font-size: 1.6rem; }
+            .config-panel { padding: 15px 12px; }
+            .config-row { flex-wrap: wrap; }
+            .config-row label { width: auto; }
+            .controls { flex-wrap: wrap; }
+            .status-label { font-size: 0.95rem; }
+            .card-back { overflow-wrap: anywhere; }
+        }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
-<body>
+<body class="tool-page">
+    <nav class="site-header" aria-label="網站導覽">
+        <a href="index.html" class="site-brand"><span class="brand-mark" aria-hidden="true">✦</span>安姆工具箱</a>
+        <a href="index.html" class="back-link">← 返回控制台</a>
+    </nav>
+
 
     <div class="container">
         <h1>🎁 驚喜洞洞樂</h1>
@@ -249,7 +268,6 @@
             <button id="applyConfigBtn" class="btn-update">套用設定並重置</button>
         </div>
         
-        <a href="index.html" class="back-link">← 返回控制台</a>
     </div>
 
     <script>
@@ -307,10 +325,11 @@
                 cardEl.innerHTML = `
                     <div class="card-inner">
                         <div class="card-front" style="font-size: ${fontSizes.front}">?</div>
-                        <div class="card-back" style="font-size: ${fontSizes.back}">${currentDrawnText}</div>
+                        <div class="card-back" style="font-size: ${fontSizes.back}"></div>
                     </div>
                 `;
                 
+                cardEl.querySelector('.card-back').textContent = currentDrawnText;
                 board.appendChild(cardEl);
 
                 cardsData.push({

@@ -52,7 +52,7 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
             gap: 25px;
             width: 90%;
             max-width: 1000px;
@@ -137,6 +137,7 @@
             padding: 40px 20px 20px 20px;
             text-align: center;
             width: 100%;
+            box-sizing: border-box;
             animation: fadeInUp 1s ease-out 0.6s backwards;
         }
 
@@ -181,8 +182,14 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
-<body>
+<body class="dashboard-page">
+    <nav class="site-header" aria-label="網站導覽">
+        <a href="index.html" class="site-brand"><span class="brand-mark" aria-hidden="true">✦</span>安姆工具箱</a>
+        <span class="site-caption">隨機靈感・日常工具</span>
+    </nav>
+
 
     <header>
         <h1>安姆的專屬控制台</h1>
@@ -257,48 +264,50 @@
 
     <footer>
         <div class="counter-badge">
-            <span>🚀 系統總啟動次數</span>
+            <span id="counterLabel">🚀 系統總啟動次數</span>
             <span class="number" id="visitCount">...</span>
         </div>
         <p class="footer-text">© 2026 安姆的專屬控制台</p>
     </footer>
 
+<script src="storage.js"></script>
 <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const countDisplay = document.getElementById('visitCount');
-            
-            // 官方提供的 V2 Increment (Up) 端點
-            const counterUrl = 'https://api.counterapi.dev/v1/normanyang/dashboard/up';
-            // 請確保這是你正確的 API Key
-            
-
-            // 依照官方 curl 指令的格式，使用 GET 請求並帶入 Authorization 標頭
-            fetch(counterUrl, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Accept': 'application/json' // 告訴伺服器我們預期收到 JSON 格式
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`伺服器回應錯誤: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                // 將回傳結果印在開發者工具(F12)的 Console，方便排解問題
-                console.log("CounterAPI 回傳資料:", data);
-                
-                // 抓取回傳的數字 (視官方格式可能是 count 或 value)
-                countDisplay.innerText = data.count || data.value || data;
-            })
-            .catch(error => {
-                console.error("計數器連線失敗:", error);
-                countDisplay.innerText = "N/A";
+    // This public CounterAPI V2 counter allows browser requests without credentials.
+    const counterEndpoint = 'https://api.counterapi.dev/v2/normanyangs-team-3848/first-counter-3848/up';
+    // Switch to POST if using the optional authenticated proxy instead.
+    const counterMethod = 'GET';
+    document.addEventListener('DOMContentLoaded', async () => {
+        const display = document.getElementById('visitCount');
+        const label = document.getElementById('counterLabel');
+        function showLocalCount() {
+            const saved = Number(toolStorage.get('dashboard_local_visits'));
+            const count = (Number.isSafeInteger(saved) && saved >= 0 && saved < Number.MAX_SAFE_INTEGER ? saved : 0) + 1;
+            const persisted = toolStorage.set('dashboard_local_visits', String(count));
+            label.textContent = persisted ? '🚀 本機啟動次數' : '🚀 本次啟動';
+            display.textContent = String(count);
+        }
+        if (!counterEndpoint) { showLocalCount(); return; }
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+        try {
+            const response = await fetch(counterEndpoint, {
+                method: counterMethod, headers: { 'Accept': 'application/json' }, signal: controller.signal
             });
-        });
-    </script>
+            if (!response.ok) throw new Error('Counter request failed');
+            const payload = await response.json();
+            const data = payload?.data ?? payload;
+            let count = data?.count ?? data?.value;
+            if (count === undefined && Number.isSafeInteger(data?.up_count)
+                && Number.isSafeInteger(data?.down_count ?? 0)) {
+                count = data.up_count - (data.down_count ?? 0);
+            }
+            if (!Number.isSafeInteger(count) || count < 0) throw new Error('Invalid counter value');
+            label.textContent = '🚀 系統總啟動次數';
+            display.textContent = String(count);
+        } catch { showLocalCount(); }
+        finally { clearTimeout(timeout); }
+    });
+</script>
 
 </body>
 </html>

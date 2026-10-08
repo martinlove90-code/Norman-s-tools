@@ -62,6 +62,7 @@
             letter-spacing: 10px;
         }
 
+        .number-display { flex-wrap: wrap; gap: 4px; letter-spacing: 0; }
         .digit {
             display: inline-block;
             width: 50px;
@@ -120,6 +121,7 @@
         }
 
         .config-row input {
+            min-width: 0;
             flex: 1;
             padding: 10px;
             font-size: 1rem;
@@ -141,9 +143,28 @@
         .back-link:hover { color: #7dd3fc; text-decoration: underline; }
 
 
+
+        .container { box-sizing: border-box; min-width: 0; }
+        .config-row input { min-width: 0; box-sizing: border-box; }
+        @media (max-width: 480px) {
+            .container { padding: 24px 16px; }
+            h1 { font-size: 1.6rem; }
+            .config-panel { padding: 15px 12px; }
+            .config-row { flex-wrap: wrap; }
+            .config-row label { width: auto; }
+            .controls { flex-wrap: wrap; }
+            .status-label { font-size: 0.95rem; }
+            .card-back { overflow-wrap: anywhere; }
+        }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
-<body>
+<body class="tool-page">
+    <nav class="site-header" aria-label="網站導覽">
+        <a href="index.html" class="site-brand"><span class="brand-mark" aria-hidden="true">✦</span>安姆工具箱</a>
+        <a href="index.html" class="back-link">← 返回控制台</a>
+    </nav>
+
 
 <div class="container">
     <h1>🎲 隨機數字抽取器</h1>
@@ -161,17 +182,17 @@
     <div class="config-panel">
         <div class="config-row">
             <label for="minValue">最小值：</label>
-            <input type="number" id="minValue" value="1" min="1">
+            <input type="number" id="minValue" value="1" min="1" max="9007199254740991" step="1">
         </div>
         <div class="config-row">
             <label for="maxValue">最大值：</label>
-            <input type="number" id="maxValue" value="99" min="1">
+            <input type="number" id="maxValue" value="99" min="1" max="9007199254740991" step="1">
         </div>
     </div>
 
-    <a href="index.html" class="back-link">← 返回控制台</a>
 </div>
 
+<script src="storage.js"></script>
 <script>
     // ==== 變數宣告 ====
     const numberDisplay = document.getElementById('numberDisplay');
@@ -181,14 +202,17 @@
 
     let MIN_VALUE = 1;
     let MAX_VALUE = 99;
+    let isAnimating = false;
+    function validRange(min, max) {
+        return Number.isSafeInteger(min) && Number.isSafeInteger(max) && min >= 1 && min <= max;
+    }
 
     // ==== 本地儲存 ====
     function loadSettings() {
-        const saved = localStorage.getItem('randomNumberSettings');
-        if (saved) {
-            const { min, max } = JSON.parse(saved);
-            MIN_VALUE = min;
-            MAX_VALUE = max;
+        const saved = toolStorage.getJSON('randomNumberSettings');
+        if (saved && validRange(saved.min, saved.max)) {
+            MIN_VALUE = saved.min;
+            MAX_VALUE = saved.max;
         }
         minValueInput.value = MIN_VALUE;
         maxValueInput.value = MAX_VALUE;
@@ -196,17 +220,18 @@
 
     function saveSettings() {
         const data = { min: MIN_VALUE, max: MAX_VALUE };
-        localStorage.setItem('randomNumberSettings', JSON.stringify(data));
+        toolStorage.set('randomNumberSettings', JSON.stringify(data));
     }
 
     // ==== 生成隨機數字 ====
     function generateRandomNumber() {
-        const min = parseInt(minValueInput.value);
-        const max = parseInt(maxValueInput.value);
+        if (isAnimating) return;
+        const min = Number(minValueInput.value);
+        const max = Number(maxValueInput.value);
 
         // 驗證輸入
-        if (isNaN(min) || isNaN(max) || min >= max) {
-            alert('請輸入有效的數字範圍，最小值必須小於最大值。');
+        if (!validRange(min, max)) {
+            alert('請輸入 1～9007199254740991 的整數，最小值不可大於最大值。');
             return;
         }
 
@@ -218,58 +243,35 @@
         // 生成隨機數字
         const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
 
-        // 分解數字
-        const hundreds = Math.floor(randomNum / 100) % 10;
-        const tens = Math.floor(randomNum / 10) % 10;
-        const ones = randomNum % 10;
-
-        // 滾動動畫
-        animateDigits(ones, tens, hundreds);
+        animateDigits(randomNum);
     }
 
-    // ==== 滾動數字動畫 ====
-    function animateDigits(targetOnes, targetTens, targetHundreds) {
-        const hundredsEl = document.getElementById('hundreds');
-        const tensEl = document.getElementById('tens');
-        const onesEl = document.getElementById('ones');
-
-        // 重置為0並移除final class
-        hundredsEl.textContent = '0';
-        tensEl.textContent = '0';
-        onesEl.textContent = '0';
-        hundredsEl.classList.remove('final');
-        tensEl.classList.remove('final');
-        onesEl.classList.remove('final');
-
-        // 先滾動個位
-        let onesCount = 0;
-        const onesInterval = setInterval(() => {
-            onesEl.textContent = onesCount;
-            if (onesCount === targetOnes) {
-                clearInterval(onesInterval);
-                onesEl.classList.add('final');
-                // 然後滾動十位
-                let tensCount = 0;
-                const tensInterval = setInterval(() => {
-                    tensEl.textContent = tensCount;
-                    if (tensCount === targetTens) {
-                        clearInterval(tensInterval);
-                        tensEl.classList.add('final');
-                        // 最後滾動百位
-                        let hundredsCount = 0;
-                        const hundredsInterval = setInterval(() => {
-                            hundredsEl.textContent = hundredsCount;
-                            if (hundredsCount === targetHundreds) {
-                                clearInterval(hundredsInterval);
-                                hundredsEl.classList.add('final');
-                            }
-                            hundredsCount = (hundredsCount + 1) % 10;
-                        }, 100);
-                    }
-                    tensCount = (tensCount + 1) % 10;
-                }, 100);
+    // Reveal rightmost digits first; one timer owns the whole animation.
+    function animateDigits(number) {
+        isAnimating = true;
+        generateBtn.disabled = true;
+        numberDisplay.innerHTML = '';
+        const targets = String(number).padStart(3, '0').split('');
+        const digits = targets.map(() => {
+            const digit = document.createElement('span');
+            digit.className = 'digit';
+            digit.textContent = '0';
+            numberDisplay.appendChild(digit);
+            return digit;
+        });
+        let index = digits.length - 1;
+        let ticks = 0;
+        const timer = setInterval(() => {
+            for (let i = 0; i <= index; i++) digits[i].textContent = Math.floor(Math.random() * 10);
+            if (++ticks < 3) return;
+            digits[index].textContent = targets[index];
+            digits[index].classList.add('final');
+            ticks = 0;
+            if (--index < 0) {
+                clearInterval(timer);
+                isAnimating = false;
+                generateBtn.disabled = false;
             }
-            onesCount = (onesCount + 1) % 10;
         }, 100);
     }
 

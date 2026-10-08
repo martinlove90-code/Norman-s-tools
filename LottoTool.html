@@ -115,12 +115,31 @@
             color: #7dd3fc;
             text-decoration: underline;
         }
+
+        .container { box-sizing: border-box; min-width: 0; }
+        .config-row input { min-width: 0; box-sizing: border-box; }
+        @media (max-width: 480px) {
+            .container { padding: 24px 16px; }
+            h1 { font-size: 1.6rem; }
+            .config-panel { padding: 15px 12px; }
+            .config-row { flex-wrap: wrap; }
+            .config-row label { width: auto; }
+            .controls { flex-wrap: wrap; }
+            .status-label { font-size: 0.95rem; }
+            .card-back { overflow-wrap: anywhere; }
+        }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
-<body>
+<body class="tool-page">
+    <nav class="site-header" aria-label="網站導覽">
+        <a href="index.html" class="site-brand"><span class="brand-mark" aria-hidden="true">✦</span>安姆工具箱</a>
+        <a href="index.html" class="back-link">← 返回控制台</a>
+    </nav>
+
 
     <div class="container">
-        <h1>💰 財神爺降臨 💰</h1>
+        <h1>🎰 大樂透隨機選號</h1>
         <p>為您隨機抽出 6 個 1~49 的不重複號碼</p>
 
         <div class="balls-container" id="ballsContainer">
@@ -129,7 +148,6 @@
         <button id="generateBtn">給我發財密碼！</button>
         
         <br>
-        <a href="index.html" class="back-link">← 返回控制台</a>
     </div>
 
     <script>
