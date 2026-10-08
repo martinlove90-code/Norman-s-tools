@@ -169,6 +169,8 @@
         .wheel-container { width: 100%; max-width: 320px; height: auto; aspect-ratio: 1; }
         .controls { width: 100%; max-width: 350px; min-width: 0; box-sizing: border-box; }
         #result { overflow-wrap: anywhere; }
+        .sound-option { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .sound-option input { width: 18px; height: 18px; }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -188,6 +190,7 @@
                 <canvas id="wheel" width="400" height="400"></canvas>
             </div>
             <button id="spinBtn">開始轉動！</button>
+            <label class="sound-option"><input id="soundEnabled" type="checkbox" checked>🔊 開啟音效</label>
             <div id="result"></div>
         </div>
 
@@ -204,6 +207,7 @@
     </div>
 
     <script src="storage.js"></script>
+    <script src="wheel-audio.js"></script>
     <script>
         const mainTitle = document.getElementById('mainTitle');
         const titleInput = document.getElementById('titleInput');
@@ -214,6 +218,14 @@
         const spinBtn = document.getElementById('spinBtn');
         const updateBtn = document.getElementById('updateBtn');
         const resultDiv = document.getElementById('result');
+        const soundEnabled = document.getElementById('soundEnabled');
+        soundEnabled.checked = toolStorage.get('wheel_sound_enabled') !== 'false';
+        const wheelSound = createWheelAudio(soundEnabled.checked);
+        soundEnabled.addEventListener('change', () => {
+            wheelSound.setEnabled(soundEnabled.checked);
+            toolStorage.set('wheel_sound_enabled', String(soundEnabled.checked));
+            if (soundEnabled.checked) wheelSound.unlock();
+        });
 
         let segments = [];
         const colors = ['#f1c40f', '#e67e22', '#e74c3c', '#9b59b6', '#3498db', '#1abc9c', '#f39c12', '#d35400', '#c0392b', '#8e44ad', '#2980b9', '#27ae60'];
@@ -314,6 +326,7 @@
 
         function spin() {
             if (isSpinning) return;
+            wheelSound.unlock();
             isSpinning = true;
             resultDiv.innerText = "轉動中...";
             spinBtn.style.opacity = "0.5";
@@ -333,7 +346,11 @@
                 const progress = spinTime / spinTimeTotal;
                 const angleStep = spinAngleStart * (1 - easeOut(progress));
                 
+                const arcSize = 2 * Math.PI / segments.length;
+                const previousSector = Math.floor((currentAngle - 3 * Math.PI / 2) / arcSize);
                 currentAngle += (angleStep * Math.PI / 180);
+                const nextSector = Math.floor((currentAngle - 3 * Math.PI / 2) / arcSize);
+                if (nextSector !== previousSector) wheelSound.tick();
                 drawWheel();
                 requestAnimationFrame(rotateWheel);
             }
@@ -354,6 +371,7 @@
             
             const resultText = segments[index];
             resultDiv.innerText = `🎉 恭喜抽中：${resultText}！ 🎉`;
+            wheelSound.win();
         }
 
         // 綁定事件
