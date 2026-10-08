@@ -262,7 +262,7 @@
                 <input type="number" id="cardCountInput" value="25" min="2" max="100">
             </div>
             <div class="config-row">
-                <span id="numberRange" aria-live="polite">數字範圍：1～25，每個數字只出現一次。</span>
+                <span id="numberRange" aria-live="polite">依序顯示 1～25，每次隨機翻開一個位置。</span>
             </div>
             <button id="applyConfigBtn" class="btn-update">套用設定並重置</button>
         </div>
@@ -313,14 +313,7 @@
             toolAudio.stop();
             board.innerHTML = '';
             cardsData = [];
-            numberRange.textContent = `數字範圍：1～${TOTAL_CARDS}，每個數字只出現一次。`;
-
-            // Place every number exactly once; each round gets a fresh shuffle.
-            const numbers = Array.from({ length: TOTAL_CARDS }, (_, index) => index + 1);
-            for (let i = numbers.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
-            }
+            numberRange.textContent = `依序顯示 1～${TOTAL_CARDS}，每次隨機翻開一個位置。`;
 
             const cols = calculateGridColumns(TOTAL_CARDS);
             board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
@@ -338,7 +331,6 @@
                     </div>
                 `;
                 
-                cardEl.querySelector('.card-back').textContent = numbers[i];
                 board.appendChild(cardEl);
 
                 cardsData.push({
@@ -375,6 +367,9 @@
             const randomIndex = Math.floor(Math.random() * availableCards.length);
             const targetCard = availableCards[randomIndex];
 
+            // Numbers follow draw order; only the unrevealed position is random.
+            const drawNumber = TOTAL_CARDS - availableCards.length + 1;
+            targetCard.element.querySelector('.card-back').textContent = drawNumber;
             targetCard.isDrawn = true;
             targetCard.element.classList.add('flipped');
             toolAudio.unlock();
