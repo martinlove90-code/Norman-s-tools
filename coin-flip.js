@@ -1,4 +1,22 @@
-(() => {
+function buildCoinFlipAnimation(duration, startAngle, finalAngle) {
+    // Fixed 3 revolutions per second, with fixed launch and landing times.
+    const degreesPerMillisecond = 1080 / 1000;
+    const launchTime = 150;
+    const landingTime = 250;
+    const spinEndTime = duration - landingTime;
+    const spinEndAngle = startAngle + spinEndTime * degreesPerMillisecond;
+    const landingAngle = Math.ceil((spinEndAngle - finalAngle) / 360) * 360 + finalAngle;
+    return [
+        { transform: `translateY(0) rotateX(${startAngle}deg) scale(1)`, offset: 0 },
+        { transform: `translateY(-70px) rotateX(${startAngle + launchTime * degreesPerMillisecond}deg) scale(1.08)`, offset: launchTime / duration },
+        { transform: `translateY(-70px) rotateX(${spinEndAngle}deg) scale(1.08)`, offset: spinEndTime / duration, easing: 'ease-out' },
+        { transform: `translateY(0) rotateX(${landingAngle}deg) scale(1)`, offset: 1 }
+    ];
+}
+
+if (typeof module !== 'undefined' && module.exports) module.exports = { buildCoinFlipAnimation };
+
+if (typeof document !== 'undefined') (() => {
     const coin = document.getElementById('coin');
     const tossBtn = document.getElementById('tossBtn');
     const resetBtn = document.getElementById('resetCoinBtn');
@@ -57,13 +75,9 @@
         toolAudio.start();
         try {
             if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches && coin.animate) {
-                const landing = 360 * 6 + finalAngle;
-                animation = coin.animate([
-                    { transform: `translateY(0) rotateX(${angle}deg)`, offset: 0 },
-                    { transform: `translateY(-70px) rotateX(${angle + 900}deg) scale(1.08)`, offset: .35 },
-                    { transform: `translateY(-18px) rotateX(${landing - 180}deg)`, offset: .8 },
-                    { transform: `translateY(0) rotateX(${landing}deg)`, offset: 1 }
-                ], { duration: Number(durationInput.value) * 1000, easing: 'ease-in-out', fill: 'forwards' });
+                const duration = Number(durationInput.value) * 1000;
+                animation = coin.animate(buildCoinFlipAnimation(duration, angle, finalAngle),
+                    { duration, easing: 'linear', fill: 'forwards' });
                 await animation.finished;
             }
             if (generation !== thisGeneration) return;

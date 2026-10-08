@@ -20,6 +20,7 @@
         .flip-duration label { display: flex; justify-content: space-between; gap: 12px; }
         #flipDuration { width: 100%; box-sizing: border-box; padding: 0; margin: 12px 0 0; }
         #flipDurationValue { color: var(--accent); font-variant-numeric: tabular-nums; }
+        .flip-duration p { margin: 4px 0 0; font-size: .85rem; }
         .coin-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 24px 0 16px; }
         .coin-stats div { padding: 12px 4px; border: 1px solid var(--theme-border); border-radius: 12px; color: var(--text-sub); }
         .coin-stats strong { display: block; font-size: 1.5rem; color: var(--text-main); }
@@ -45,6 +46,7 @@
         <div class="flip-duration">
             <label for="flipDuration">翻轉時間<output id="flipDurationValue" for="flipDuration">1.9 秒</output></label>
             <input id="flipDuration" type="range" min="0.5" max="15" step="0.1" value="1.9" aria-valuetext="1.9 秒">
+            <p>時間越長，翻轉圈數越多；翻轉速度固定。</p>
         </div>
         <div class="coin-stats" aria-label="本次使用統計">
             <div>擲幣次數<strong id="totalCount">0</strong></div>
