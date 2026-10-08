@@ -16,6 +16,10 @@
         .coin-back { transform: rotateX(180deg); }
         #coinResult { min-height: 32px; margin: 0 0 16px; font-size: 1.25rem; font-weight: 700; color: #fbbf24; }
         #tossBtn { width: 100%; max-width: 360px; }
+        .flip-duration { max-width: 360px; margin: 20px auto 0; text-align: left; }
+        .flip-duration label { display: flex; justify-content: space-between; gap: 12px; }
+        #flipDuration { width: 100%; box-sizing: border-box; padding: 0; margin: 12px 0 0; }
+        #flipDurationValue { color: var(--accent); font-variant-numeric: tabular-nums; }
         .coin-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 24px 0 16px; }
         .coin-stats div { padding: 12px 4px; border: 1px solid var(--theme-border); border-radius: 12px; color: var(--text-sub); }
         .coin-stats strong { display: block; font-size: 1.5rem; color: var(--text-main); }
@@ -38,6 +42,10 @@
         </div>
         <div id="coinResult" role="status" aria-live="polite">正在載入硬幣…</div>
         <button id="tossBtn" type="button" disabled>🪙 擲一次硬幣</button>
+        <div class="flip-duration">
+            <label for="flipDuration">翻轉時間<output id="flipDurationValue" for="flipDuration">1.9 秒</output></label>
+            <input id="flipDuration" type="range" min="0.5" max="5" step="0.1" value="1.9" aria-valuetext="1.9 秒">
+        </div>
         <div class="coin-stats" aria-label="本次使用統計">
             <div>擲幣次數<strong id="totalCount">0</strong></div>
             <div>正面<strong id="headsCount">0</strong></div>

@@ -3,6 +3,23 @@
     const tossBtn = document.getElementById('tossBtn');
     const resetBtn = document.getElementById('resetCoinBtn');
     const result = document.getElementById('coinResult');
+    const durationInput = document.getElementById('flipDuration');
+    const durationValue = document.getElementById('flipDurationValue');
+    const durationKey = 'coinFlipDurationSeconds';
+    const savedDuration = Number(toolStorage.get(durationKey));
+    durationInput.value = Number.isFinite(savedDuration) && savedDuration >= 0.5 && savedDuration <= 5
+        ? Math.round(savedDuration * 10) / 10 : 1.9;
+
+    function updateDuration() {
+        const seconds = Number(durationInput.value).toFixed(1);
+        durationValue.textContent = `${seconds} 秒`;
+        durationInput.setAttribute('aria-valuetext', `${seconds} 秒`);
+    }
+    updateDuration();
+    durationInput.addEventListener('input', () => {
+        updateDuration();
+        toolStorage.set(durationKey, durationInput.value);
+    });
     let heads = 0;
     let tails = 0;
     let angle = 0;
@@ -21,6 +38,7 @@
         busy = value;
         tossBtn.disabled = value || !ready;
         resetBtn.disabled = value || !ready;
+        durationInput.disabled = value;
         coin.setAttribute('aria-busy', String(value));
     }
 
@@ -45,7 +63,7 @@
                     { transform: `translateY(-70px) rotateX(${angle + 900}deg) scale(1.08)`, offset: .35 },
                     { transform: `translateY(-18px) rotateX(${landing - 180}deg)`, offset: .8 },
                     { transform: `translateY(0) rotateX(${landing}deg)`, offset: 1 }
-                ], { duration: 1900, easing: 'ease-in-out', fill: 'forwards' });
+                ], { duration: Number(durationInput.value) * 1000, easing: 'ease-in-out', fill: 'forwards' });
                 await animation.finished;
             }
             if (generation !== thisGeneration) return;
