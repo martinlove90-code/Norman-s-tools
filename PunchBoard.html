@@ -262,8 +262,7 @@
                 <input type="number" id="cardCountInput" value="25" min="2" max="100">
             </div>
             <div class="config-row">
-                <label for="drawnTextInput">開獎文字：</label>
-                <input type="text" id="drawnTextInput" value="中！" maxlength="4">
+                <span id="numberRange" aria-live="polite">數字範圍：1～25，每個數字只出現一次。</span>
             </div>
             <button id="applyConfigBtn" class="btn-update">套用設定並重置</button>
         </div>
@@ -278,11 +277,10 @@
         const resetBtn = document.getElementById('resetBtn');
         const statusLabel = document.getElementById('statusLabel');
         const cardCountInput = document.getElementById('cardCountInput');
-        const drawnTextInput = document.getElementById('drawnTextInput');
+        const numberRange = document.getElementById('numberRange');
         const applyConfigBtn = document.getElementById('applyConfigBtn');
 
         let TOTAL_CARDS = 25; 
-        let currentDrawnText = "中！";
         let cardsData = []; 
 
         // 根據總數量，自動計算最佳的排版欄數
@@ -292,7 +290,7 @@
             return cols;
         }
 
-        // 根據卡片總數與自訂文字的長度，動態微調字體大小
+        // 根據卡片總數與數字位數，動態微調字體大小
         function getDynamicFontSize(total, textLength) {
             let frontSize = '24px';
             let backSize = '16px';
@@ -312,13 +310,22 @@
 
         // 初始化/重置遊戲
         function initGame() {
+            toolAudio.stop();
             board.innerHTML = '';
             cardsData = [];
+            numberRange.textContent = `數字範圍：1～${TOTAL_CARDS}，每個數字只出現一次。`;
+
+            // Place every number exactly once; each round gets a fresh shuffle.
+            const numbers = Array.from({ length: TOTAL_CARDS }, (_, index) => index + 1);
+            for (let i = numbers.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+            }
 
             const cols = calculateGridColumns(TOTAL_CARDS);
             board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
-            const fontSizes = getDynamicFontSize(TOTAL_CARDS, currentDrawnText.length);
+            const fontSizes = getDynamicFontSize(TOTAL_CARDS, String(TOTAL_CARDS).length);
 
             for (let i = 0; i < TOTAL_CARDS; i++) {
                 const cardEl = document.createElement('div');
@@ -331,7 +338,7 @@
                     </div>
                 `;
                 
-                cardEl.querySelector('.card-back').textContent = currentDrawnText;
+                cardEl.querySelector('.card-back').textContent = numbers[i];
                 board.appendChild(cardEl);
 
                 cardsData.push({
@@ -345,28 +352,15 @@
             drawBtn.disabled = false;
         }
 
-        // 應用新的設定 (數量 + 文字)
+        // 應用洞洞數量，也就是數字範圍的上限 X。
         function applyConfig() {
-            let newCount = parseInt(cardCountInput.value);
-            
-            if (isNaN(newCount) || newCount < 2) {
-                alert("數量至少要 2 張喔！");
-                newCount = 2;
-                cardCountInput.value = 2;
-            } else if (newCount > 100) {
-                alert("洞洞數量太多了！為了確保網頁順暢與排版美觀，已為您限制為最大值 100 張。");
-                newCount = 100;
-                cardCountInput.value = 100;
-            }
-
-            let newText = drawnTextInput.value.trim();
-            if (newText === "") {
-                newText = "中！";
-                drawnTextInput.value = "中！";
+            const newCount = Number(cardCountInput.value);
+            if (!Number.isInteger(newCount) || newCount < 2 || newCount > 100) {
+                alert("洞洞數量請輸入 2～100 的整數。");
+                return;
             }
 
             TOTAL_CARDS = newCount;
-            currentDrawnText = newText;
             initGame();
         }
 
@@ -411,9 +405,6 @@
         applyConfigBtn.addEventListener('click', applyConfig);
         
         cardCountInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') applyConfig();
-        });
-        drawnTextInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') applyConfig();
         });
 
