@@ -193,6 +193,7 @@
 </div>
 
 <script src="storage.js"></script>
+<script src="tool-audio.js"></script>
 <script>
     // ==== 變數宣告 ====
     const numberDisplay = document.getElementById('numberDisplay');
@@ -243,6 +244,8 @@
         // 生成隨機數字
         const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
 
+        toolAudio.unlock();
+        toolAudio.start();
         animateDigits(randomNum);
     }
 
@@ -263,12 +266,14 @@
         let ticks = 0;
         const timer = setInterval(() => {
             for (let i = 0; i <= index; i++) digits[i].textContent = Math.floor(Math.random() * 10);
+            toolAudio.tick();
             if (++ticks < 3) return;
             digits[index].textContent = targets[index];
             digits[index].classList.add('final');
             ticks = 0;
             if (--index < 0) {
                 clearInterval(timer);
+                toolAudio.win();
                 isAnimating = false;
                 generateBtn.disabled = false;
             }

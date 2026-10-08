@@ -117,6 +117,7 @@ function checkCollisions() {
     bullets.forEach((bullet, bIdx) => {
         enemies.forEach((enemy, eIdx) => {
             if (!bulletsHit.has(bIdx) && !enemiesHit.has(eIdx) && checkAABBCollision(bullet, enemy)) {
+                toolAudio.hit();
                 score += 10;
                 enemiesHit.add(eIdx);
                 bulletsHit.add(bIdx);
@@ -126,6 +127,7 @@ function checkCollisions() {
 
     enemies.forEach((enemy, eIdx) => {
         if (!enemiesHit.has(eIdx) && checkAABBCollision(player, enemy)) {
+            toolAudio.damage();
             lives--;
             enemiesHit.add(eIdx);
         }
@@ -213,6 +215,7 @@ function syncFiring() {
     }
     if (bulletIntervalId !== null) return;
     bulletIntervalId = setInterval(() => {
+        toolAudio.shoot();
         bullets.push({ x: player.x + player.width / 2 - 2, y: player.y - 20,
             width: 4, height: 10, speed: 10 });
     }, BULLET_INTERVAL);
@@ -251,6 +254,8 @@ function setupVirtualButtons() {
 
 // ==== Game initialization ====
 function initializeGame() {
+    toolAudio.unlock();
+    toolAudio.start();
     cancelAnimationFrame(gameLoopInterval);
     stopFiring();
     keys = {};
@@ -297,6 +302,7 @@ function togglePause() {
     isPaused = !isPaused;
     document.getElementById('pause-button').textContent = isPaused ? '繼續' : '暫停';
     if (isPaused) {
+        toolAudio.stop();
         pausedAt = performance.now();
         cancelAnimationFrame(gameLoopInterval);
         gameLoopInterval = null;
@@ -328,6 +334,7 @@ function endGame() {
     document.getElementById('start-button').disabled = false;
     document.getElementById('pause-button').disabled = true;
     document.getElementById('pause-button').textContent = '暫停';
+    toolAudio.end();
     alert(`遊戲結束！得分: ${score}`);
 }
 

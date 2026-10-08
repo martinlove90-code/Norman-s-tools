@@ -170,8 +170,6 @@
         #wheel { display: block; width: 100%; height: auto; aspect-ratio: 1; }
         .controls { width: 100%; max-width: 350px; min-width: 0; box-sizing: border-box; }
         #result { overflow-wrap: anywhere; }
-        .sound-option { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .sound-option input { width: 18px; height: 18px; }
         body.tool-page.lucky-wheel-page .main-container { max-width: 1000px; }
         body.tool-page.lucky-wheel-page .wheel-section { max-width: 550px; padding: 28px 24px 20px; }
         @media (max-width: 600px) {
@@ -196,7 +194,6 @@
                 <canvas id="wheel" width="800" height="800"></canvas>
             </div>
             <button id="spinBtn">開始轉動！</button>
-            <label class="sound-option"><input id="soundEnabled" type="checkbox" checked>🔊 開啟音效</label>
             <div id="result"></div>
         </div>
 
@@ -213,7 +210,7 @@
     </div>
 
     <script src="storage.js"></script>
-    <script src="wheel-audio.js"></script>
+    <script src="tool-audio.js"></script>
     <script>
         const mainTitle = document.getElementById('mainTitle');
         const titleInput = document.getElementById('titleInput');
@@ -224,14 +221,7 @@
         const spinBtn = document.getElementById('spinBtn');
         const updateBtn = document.getElementById('updateBtn');
         const resultDiv = document.getElementById('result');
-        const soundEnabled = document.getElementById('soundEnabled');
-        soundEnabled.checked = toolStorage.get('wheel_sound_enabled') !== 'false';
-        const wheelSound = createWheelAudio(soundEnabled.checked);
-        soundEnabled.addEventListener('change', () => {
-            wheelSound.setEnabled(soundEnabled.checked);
-            toolStorage.set('wheel_sound_enabled', String(soundEnabled.checked));
-            if (soundEnabled.checked) wheelSound.unlock();
-        });
+        const wheelSound = toolAudio;
 
         let segments = [];
         const colors = ['#f1c40f', '#e67e22', '#e74c3c', '#9b59b6', '#3498db', '#1abc9c', '#f39c12', '#d35400', '#c0392b', '#8e44ad', '#2980b9', '#27ae60'];

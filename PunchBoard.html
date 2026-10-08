@@ -270,6 +270,8 @@
         
     </div>
 
+    <script src="storage.js"></script>
+    <script src="tool-audio.js"></script>
     <script>
         const board = document.getElementById('board');
         const drawBtn = document.getElementById('drawBtn');
@@ -381,6 +383,8 @@
 
             targetCard.isDrawn = true;
             targetCard.element.classList.add('flipped');
+            toolAudio.unlock();
+            toolAudio.flip();
 
             updateStatus();
         }

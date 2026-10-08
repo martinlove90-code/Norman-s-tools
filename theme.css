@@ -190,6 +190,17 @@ body.tool-page button:not(.top-btn):disabled {
     transform: none;
 }
 
+body.tool-page .tool-sound-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-end;
+    margin: -12px 0 20px;
+    color: var(--text-sub);
+    cursor: pointer;
+}
+body.tool-page .tool-sound-option input { width: 18px; height: 18px; }
+
 body.tool-page .back-link {
     box-sizing: border-box;
     position: static;

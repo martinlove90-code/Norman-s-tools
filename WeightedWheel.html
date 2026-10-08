@@ -214,6 +214,8 @@
         </div>
     </div>
 
+    <script src="storage.js"></script>
+    <script src="tool-audio.js"></script>
     <script>
         const canvas = document.getElementById('wheel');
         const ctx = canvas.getContext('2d');
@@ -388,6 +390,7 @@
         // 開始旋轉
         function spin() {
             if (isSpinning) return;
+            toolAudio.unlock();
             isSpinning = true;
             resultDiv.innerText = "轉動中...";
             spinBtn.style.opacity = "0.5";
@@ -410,6 +413,7 @@
                 const angleStep = spinAngleStart * (1 - easeOut(progress));
                 
                 currentAngle += (angleStep * Math.PI / 180);
+                toolAudio.tick();
                 drawWheel();
                 requestAnimationFrame(rotateWheel);
             }
@@ -443,6 +447,7 @@
             }
             
             resultDiv.innerText = `🎉 恭喜抽中：${resultText}！ 🎉`;
+            toolAudio.win();
         }
 
         spinBtn.addEventListener('click', spin);

@@ -150,6 +150,8 @@
         <br>
     </div>
 
+    <script src="storage.js"></script>
+    <script src="tool-audio.js"></script>
     <script>
         const generateBtn = document.getElementById('generateBtn');
         const ballsContainer = document.getElementById('ballsContainer');
@@ -167,6 +169,8 @@
 
         function generateNumbers() {
             // 停用按鈕，避免開獎途中重複點擊
+            toolAudio.unlock();
+            toolAudio.start();
             generateBtn.disabled = true;
             generateBtn.style.opacity = '0.7';
 
@@ -197,6 +201,7 @@
 
                     // 第二步：等待縮小後，改變文字，再放大恢復原狀（完成翻牌）
                     setTimeout(() => {
+                        toolAudio.flip();
                         balls[index].textContent = num < 10 ? '0' + num : num;
                         balls[index].style.transform = 'scale(1)';
                         balls[index].style.opacity = '1';
@@ -205,6 +210,7 @@
                     // 當最後一顆球開完後，恢復按鈕狀態
                     if(index === 5) {
                         setTimeout(() => {
+                            toolAudio.win();
                             generateBtn.disabled = false;
                             generateBtn.style.opacity = '1';
                         }, 200);

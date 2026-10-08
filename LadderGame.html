@@ -254,6 +254,7 @@
     </div>
 
     <script src="storage.js"></script>
+<script src="tool-audio.js"></script>
     <script>
         const canvas = document.getElementById('ladderCanvas');
         const ctx = canvas.getContext('2d');
@@ -426,6 +427,8 @@
 
         function startTrace(startIndex) {
             if (isAnimating) return;
+            toolAudio.unlock();
+            toolAudio.start();
             isAnimating = true;
             
             // 點擊瞬間揭露所有橫線
@@ -465,6 +468,7 @@
 
         function animatePath(points, pointIndex, finalCol) {
             if (pointIndex >= points.length - 1) {
+                toolAudio.win();
                 isAnimating = false;
                 document.querySelectorAll('.top-btn').forEach(btn => btn.disabled = false);
                 document.getElementById('bottomRow').children[finalCol].classList.add('highlight');
@@ -472,6 +476,7 @@
                 return;
             }
 
+            toolAudio.tick();
             const p1 = points[pointIndex];
             const p2 = points[pointIndex + 1];
             const dx = p2.x - p1.x;

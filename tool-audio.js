@@ -1,12 +1,14 @@
 // Synthesized effects: no downloads, and audio starts only after a user gesture.
-function createWheelAudio(initialEnabled) {
+function createToolAudio(initialEnabled) {
     let enabled = initialEnabled;
     let context = null;
     let output = null;
     let lastTick = -Infinity;
+    let generation = 0;
     const voices = new Set();
 
     function silence() {
+        generation++;
         for (const voice of voices) {
             try { voice.stop(); } catch { /* Already stopped. */ }
         }
@@ -29,7 +31,17 @@ function createWheelAudio(initialEnabled) {
     }
 
     function tone(frequency, delay, duration, type) {
-        if (!enabled || !context || context.state !== 'running' || document.hidden) return;
+        if (!enabled || !context || document.hidden) return;
+        if (context.state === 'suspended') {
+            const requestedGeneration = generation;
+            try {
+                context.resume().then(() => {
+                    if (generation === requestedGeneration && context.state === 'running') tone(frequency, delay, duration, type);
+                }).catch(() => {});
+            } catch { /* A failed resume must not affect the tool. */ }
+            return;
+        }
+        if (context.state !== 'running') return;
         try {
             const start = context.currentTime + delay;
             const oscillator = context.createOscillator();
@@ -59,6 +71,13 @@ function createWheelAudio(initialEnabled) {
 
     return {
         unlock,
+        stop: silence,
+        start() { tone(440, 0.02, 0.12, 'sine'); tone(660, 0.14, 0.15, 'sine'); },
+        flip() { tone(700, 0.01, 0.09, 'triangle'); },
+        shoot() { tone(1500, 0, 0.045, 'triangle'); },
+        hit() { tone(180, 0, 0.12, 'sawtooth'); },
+        damage() { tone(100, 0, 0.22, 'triangle'); },
+        end() { silence(); tone(330, 0, 0.2, 'sine'); tone(220, 0.2, 0.35, 'sine'); },
         setEnabled(value) {
             enabled = value;
             if (!enabled) silence();
@@ -77,3 +96,26 @@ function createWheelAudio(initialEnabled) {
         }
     };
 }
+
+// One control per tool; each preference is independent.
+(() => {
+    const name = location.pathname.split('/').pop();
+    const key = name === 'Randomtool01.html' ? 'wheel_sound_enabled' : 'tool_sound_' + name;
+    const enabled = toolStorage.get(key) !== 'false';
+    window.toolAudio = createToolAudio(enabled);
+    const label = document.createElement('label');
+    label.className = 'tool-sound-option';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.id = 'soundEnabled';
+    checkbox.checked = enabled;
+    label.append(checkbox, document.createTextNode('🔊 開啟音效'));
+    document.querySelector('.site-header').insertAdjacentElement('afterend', label);
+    checkbox.addEventListener('change', () => {
+        toolAudio.setEnabled(checkbox.checked);
+        toolStorage.set(key, String(checkbox.checked));
+        if (checkbox.checked) toolAudio.unlock();
+    });
+    document.addEventListener('pointerdown', () => toolAudio.unlock(), { capture: true });
+    document.addEventListener('keydown', () => toolAudio.unlock(), { capture: true });
+})();

@@ -263,6 +263,7 @@
 </div>
 
 <script src="storage.js"></script>
+<script src="tool-audio.js"></script>
 <script>
     // ==== 變數宣告 ====
     const board = document.getElementById('board');
@@ -371,6 +372,9 @@
         }
         // 翻面顯示
         target.element.classList.add('flipped');
+        toolAudio.unlock();
+        if (target.element.classList.contains('winner')) toolAudio.win();
+        else toolAudio.flip();
         updateStatus();
     }
 

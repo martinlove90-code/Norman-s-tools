@@ -71,6 +71,7 @@ if (typeof document !== 'undefined') (() => {
     function finishGeneration() {
         animationTimer = null;
         renderResults();
+        toolAudio.win();
         const date = new Date();
         generatedAt.dateTime = date.toISOString();
         generatedAt.textContent = date.toLocaleString('zh-TW');
@@ -96,6 +97,7 @@ if (typeof document !== 'undefined') (() => {
         let ticks = 0;
         animationTimer = setInterval(() => {
             for (let i = 0; i <= index; i++) digits[i].textContent = Math.floor(Math.random() * 10);
+            toolAudio.tick();
             if (++ticks < 3) return;
             digits[index].textContent = targets[index];
             digits[index].classList.add('final');
@@ -113,6 +115,7 @@ if (typeof document !== 'undefined') (() => {
         try {
             const next = generateSequence(Number(minInput.value), Number(maxInput.value), Number(quantityInput.value), noRepeatInput.checked);
             error.hidden = true;
+            toolAudio.unlock();
             results = next;
             saveSettings();
             generatedAt.hidden = true;
@@ -131,6 +134,7 @@ if (typeof document !== 'undefined') (() => {
     byId('clearResultsBtn').addEventListener('click', () => {
         if (animationTimer !== null) clearInterval(animationTimer);
         animationTimer = null;
+        toolAudio.stop();
         results = [];
         generatedAt.hidden = true;
         generatedAt.textContent = '';
