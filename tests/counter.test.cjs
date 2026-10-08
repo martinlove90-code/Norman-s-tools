@@ -16,6 +16,7 @@ test('authenticated upstream increment returns only the public count, including 
             assert.equal(url, 'https://api.counterapi.dev/v2/workspace/counter/up');
             assert.equal(options.headers.Authorization, 'Bearer test-secret');
             assert.equal(options.redirect, 'error');
+            assert.equal(options.cache, 'no-store');
             return { ok: true, json: async () => payload };
         } })({ method: 'POST', headers: {} }, result);
         assert.equal(result.statusCode, 200);

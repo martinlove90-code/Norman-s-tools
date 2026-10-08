@@ -40,6 +40,7 @@ function createVisitsHandler({ env = process.env, fetchImpl = fetch } = {}) {
             const url = `https://api.counterapi.dev/v2/${encodeURIComponent(workspace)}/${encodeURIComponent(counter)}/up`;
             const upstream = await fetchImpl(url, {
                 method: 'GET',
+                cache: 'no-store',
                 headers: { Authorization: `Bearer ${key}`, Accept: 'application/json' },
                 signal: AbortSignal.timeout(4000),
                 redirect: 'error'

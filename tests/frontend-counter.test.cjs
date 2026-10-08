@@ -36,6 +36,7 @@ test('public V2 request uses GET without credentials and displays returned net c
     const result = await loadCounter({ payload: { data: { up_count: 18, down_count: 2 } } });
     assert.equal(result.request.url, 'https://api.counterapi.dev/v2/normanyangs-team-3848/first-counter-3848/up');
     assert.equal(result.request.options.method, 'GET');
+    assert.equal(result.request.options.cache, 'no-store');
     assert.equal(result.request.options.headers.Authorization, undefined);
     assert.equal(result.elements.visitCount.textContent, '16');
     assert.ok(result.elements.counterLabel.textContent.includes('系統總啟動次數'));

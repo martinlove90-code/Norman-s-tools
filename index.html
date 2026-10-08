@@ -291,7 +291,8 @@
         const timeout = setTimeout(() => controller.abort(), 5000);
         try {
             const response = await fetch(counterEndpoint, {
-                method: counterMethod, headers: { 'Accept': 'application/json' }, signal: controller.signal
+                method: counterMethod, cache: 'no-store',
+                headers: { 'Accept': 'application/json' }, signal: controller.signal
             });
             if (!response.ok) throw new Error('Counter request failed');
             const payload = await response.json();
