@@ -75,6 +75,10 @@ test('local server serves browser assets and refuses environment, repository and
         const head = await fetch(base + '/coin-10-tails.png', { method: 'HEAD' });
         assert.equal(head.status, 200);
         assert.equal((await head.arrayBuffer()).byteLength, 0);
+        const optimizedImage = await fetch(base + '/jiaobei-flat.webp');
+        assert.equal(optimizedImage.status, 200);
+        assert.equal(optimizedImage.headers.get('content-type'), 'image/webp');
+        assert.equal(Buffer.from(await optimizedImage.arrayBuffer()).toString('ascii', 8, 12), 'WEBP');
         for (const privateFile of ['/.env', '/.env.example', '/.git/config', '/server.cjs', '/api/visits.js', '/%2eenv']) assert.equal((await fetch(base + privateFile)).status, 404);
         assert.equal((await fetch(base + '/api/visits')).status, 405);
     } finally { await new Promise(resolve => server.close(resolve)); }

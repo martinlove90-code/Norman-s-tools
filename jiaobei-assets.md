@@ -5,6 +5,8 @@
 - 平面：`jiaobei-flat.png`
 - 凸面：`jiaobei-convex.png`
 
+頁面載入使用壓縮版本 `jiaobei-flat.webp`、`jiaobei-convex.webp`：640 × 640、品質 85%、保留透明背景，合計 99,612 位元組。原始 PNG 保留，合計 2,045,661 位元組；壓縮版本減少約 95.1% 傳輸量。
+
 ## 判讀參考
 
 依據 [行天宮擲筊說明](https://www.ht.org.tw/religion207.htm) 與 [國立傳統藝術中心筊杯典藏](https://collections.ncfta.gov.tw/pages/product/view.aspx?id=11200404203)：
