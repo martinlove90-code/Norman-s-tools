@@ -3,159 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>隨機數字抽取器</title>
+    <title>隨機亂數產生器</title>
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.8);
-            --text-main: #f8fafc;
-            --accent: #10b981;
-            --accent-hover: #059669;
-        }
-
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-        }
-
-        .container {
-            background: var(--card-bg);
-            padding: 30px 40px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            text-align: center;
-            backdrop-filter: blur(10px);
-            max-width: 600px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        h1 {
-            margin-top: 0;
-            margin-bottom: 30px;
-            color: var(--accent);
-            font-size: 2rem;
-            letter-spacing: 2px;
-            text-shadow: 0 2px 10px rgba(16,185,129,0.3);
-        }
-
-        .number-display {
-            font-size: 4rem;
-            font-weight: bold;
-            margin: 40px 0;
-            min-height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0,0,0,0.2);
-            border-radius: 15px;
-            border: 2px solid rgba(16,185,129,0.3);
-            letter-spacing: 10px;
-        }
-
-        .number-display { flex-wrap: wrap; gap: 4px; letter-spacing: 0; }
-        .digit {
-            display: inline-block;
-            width: 50px;
-            text-align: center;
-            transition: color 0.3s ease;
-            color: var(--accent);
-        }
-
-        .digit.final {
-            color: #fbbf24;
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-
-        button.action-btn {
-            flex: 1;
-            padding: 15px 20px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .btn-generate { background: linear-gradient(to right, #10b981, #059669); }
-        .btn-generate:hover { background: #059669; transform: translateY(-2px); }
-
-        .config-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            background: rgba(0,0,0,0.2);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .config-row {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .config-row label {
-            width: 80px;
-            font-weight: bold;
-            color: #cbd5e1;
-        }
-
-        .config-row input {
-            min-width: 0;
-            flex: 1;
-            padding: 10px;
-            font-size: 1rem;
-            border-radius: 6px;
-            border: 1px solid #475569;
-            background: #1e293b;
-            color: #fff;
-        }
-
-        .config-row input:focus { border-color: var(--accent); }
-
-        .back-link {
-            display: inline-block;
-            margin-top: 20px;
-            color: #38bdf8;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .back-link:hover { color: #7dd3fc; text-decoration: underline; }
-
-
-
-        .container { box-sizing: border-box; min-width: 0; }
-        .config-row input { min-width: 0; box-sizing: border-box; }
-        @media (max-width: 480px) {
-            .container { padding: 24px 16px; }
-            h1 { font-size: 1.6rem; }
-            .config-panel { padding: 15px 12px; }
-            .config-row { flex-wrap: wrap; }
-            .config-row label { width: auto; }
-            .controls { flex-wrap: wrap; }
-            .status-label { font-size: 0.95rem; }
-            .card-back { overflow-wrap: anywhere; }
-        }
+        .container { width: 100%; max-width: 800px; text-align: center; }
+        .config-panel { display: flex; flex-direction: column; gap: 16px; padding: 20px; }
+        .range-row { display: flex; align-items: end; justify-content: center; flex-wrap: wrap; gap: 12px; }
+        .range-row label { display: flex; flex-direction: column; gap: 6px; text-align: left; flex: 1; min-width: 100px; }
+        .range-row input { width: 100%; }
+        .range-symbol { padding-bottom: 10px; color: var(--text-sub); }
+        .repeat-option { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .repeat-option input { width: 18px; height: 18px; }
+        .config-help { margin: 0; font-size: 0.85rem; }
+        #errorMessage { margin: 0; color: #fda4af; }
+        .result-section { margin-top: 28px; }
+        .result-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+        .result-toolbar h2 { margin: 0; }
+        .view-controls { display: flex; gap: 8px; }
+        #inlineViewBtn, #listViewBtn { padding: 8px 12px; background: #25334b; color: var(--text-main); border: 1px solid var(--theme-border); }
+        #inlineViewBtn[aria-pressed="true"], #listViewBtn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+        #inlineViewBtn:hover, #listViewBtn:hover { background: #34445f; }
+        .number-display { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px 24px; min-height: 120px; max-height: 400px; overflow: auto; padding: 20px; border: 1px solid var(--theme-border); border-radius: 14px; }
+        .number-display.is-empty { color: var(--text-sub); }
+        .result-number { max-width: 100%; overflow-wrap: anywhere; font-size: clamp(1.5rem, 5vw, 2.5rem); font-weight: 700; font-variant-numeric: tabular-nums; color: #fbbf24; }
+        .number-display.list-view { flex-direction: column; flex-wrap: nowrap; align-items: stretch; justify-content: flex-start; gap: 0; }
+        .list-view .result-number { padding: 8px; font-size: 1.25rem; border-bottom: 1px solid var(--theme-border); }
+        .list-view .result-number:last-child { border-bottom: 0; }
+        .digit { display: inline-block; color: var(--accent); }
+        .digit.final { color: #fbbf24; }
+        #generatedAt { display: block; margin: 14px 0; color: var(--text-sub); font-size: 0.9rem; }
+        .result-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        #titleEditor { margin-top: 16px; padding: 16px; border: 1px solid var(--theme-border); border-radius: 12px; }
+        #titleEditor label { display: block; text-align: left; margin-bottom: 8px; }
+        #titleInput { width: 100%; margin-bottom: 12px; }
+        [hidden] { display: none !important; }
+        @media (max-width: 480px) { .config-panel { padding: 16px; } .range-symbol { display: none; } .number-display { gap: 12px; padding: 16px; } }
     </style>
     <link rel="stylesheet" href="theme.css">
 </head>
@@ -164,130 +45,43 @@
         <a href="index.html" class="site-brand"><span class="brand-mark" aria-hidden="true">✦</span>安姆工具箱</a>
         <a href="index.html" class="back-link">← 返回控制台</a>
     </nav>
-
-
-<div class="container">
-    <h1>🎲 隨機數字抽取器</h1>
-
-    <div id="numberDisplay" class="number-display">
-        <span class="digit" id="hundreds">0</span>
-        <span class="digit" id="tens">0</span>
-        <span class="digit" id="ones">0</span>
-    </div>
-
-    <div class="controls">
-        <button id="generateBtn" class="action-btn btn-generate">🎲 生成數字</button>
-    </div>
-
-    <div class="config-panel">
-        <div class="config-row">
-            <label for="minValue">最小值：</label>
-            <input type="number" id="minValue" value="1" min="1" max="9007199254740991" step="1">
+    <main class="container">
+        <h1 id="mainTitle">🎲 隨機亂數產生器</h1>
+        <form id="generatorForm" class="config-panel">
+            <div class="range-row">
+                <label for="minValue">最小值<input type="number" id="minValue" value="1" min="1" max="9007199254740991" step="1" required></label>
+                <span class="range-symbol" aria-hidden="true">～</span>
+                <label for="maxValue">最大值<input type="number" id="maxValue" value="10" min="1" max="9007199254740991" step="1" required></label>
+                <span class="range-symbol" aria-hidden="true">×</span>
+                <label for="quantity">產生數量<input type="number" id="quantity" value="5" min="1" max="1000" step="1" required></label>
+            </div>
+            <label class="repeat-option"><input type="checkbox" id="noRepeat" checked>沒有重複項目</label>
+            <p class="config-help">範圍包含最小值與最大值，每次最多產生 1,000 個數字。</p>
+            <p id="errorMessage" role="alert" hidden></p>
+            <button id="generateBtn" type="submit">🎲 產生數字</button>
+        </form>
+        <section class="result-section" aria-labelledby="resultHeading">
+            <div class="result-toolbar">
+                <h2 id="resultHeading">結果</h2>
+                <div class="view-controls" role="group" aria-label="結果顯示方式">
+                    <button id="inlineViewBtn" type="button" aria-pressed="true">橫排</button>
+                    <button id="listViewBtn" type="button" aria-pressed="false">列表</button>
+                </div>
+            </div>
+            <div id="numberDisplay" class="number-display is-empty" aria-live="polite" aria-busy="false">尚未產生數字</div>
+            <time id="generatedAt" hidden></time>
+        </section>
+        <div class="result-actions">
+            <button id="editTitleBtn" type="button" class="btn-update" aria-expanded="false" aria-controls="titleEditor">修改標題</button>
+            <button id="clearResultsBtn" type="button" class="btn-reset">清除所有結果</button>
         </div>
-        <div class="config-row">
-            <label for="maxValue">最大值：</label>
-            <input type="number" id="maxValue" value="99" min="1" max="9007199254740991" step="1">
-        </div>
-    </div>
-
-</div>
-
-<script src="storage.js"></script>
-<script>
-    // ==== 變數宣告 ====
-    const numberDisplay = document.getElementById('numberDisplay');
-    const generateBtn = document.getElementById('generateBtn');
-    const minValueInput = document.getElementById('minValue');
-    const maxValueInput = document.getElementById('maxValue');
-
-    let MIN_VALUE = 1;
-    let MAX_VALUE = 99;
-    let isAnimating = false;
-    function validRange(min, max) {
-        return Number.isSafeInteger(min) && Number.isSafeInteger(max) && min >= 1 && min <= max;
-    }
-
-    // ==== 本地儲存 ====
-    function loadSettings() {
-        const saved = toolStorage.getJSON('randomNumberSettings');
-        if (saved && validRange(saved.min, saved.max)) {
-            MIN_VALUE = saved.min;
-            MAX_VALUE = saved.max;
-        }
-        minValueInput.value = MIN_VALUE;
-        maxValueInput.value = MAX_VALUE;
-    }
-
-    function saveSettings() {
-        const data = { min: MIN_VALUE, max: MAX_VALUE };
-        toolStorage.set('randomNumberSettings', JSON.stringify(data));
-    }
-
-    // ==== 生成隨機數字 ====
-    function generateRandomNumber() {
-        if (isAnimating) return;
-        const min = Number(minValueInput.value);
-        const max = Number(maxValueInput.value);
-
-        // 驗證輸入
-        if (!validRange(min, max)) {
-            alert('請輸入 1～9007199254740991 的整數，最小值不可大於最大值。');
-            return;
-        }
-
-        // 更新設定
-        MIN_VALUE = min;
-        MAX_VALUE = max;
-        saveSettings();
-
-        // 生成隨機數字
-        const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
-
-        animateDigits(randomNum);
-    }
-
-    // Reveal rightmost digits first; one timer owns the whole animation.
-    function animateDigits(number) {
-        isAnimating = true;
-        generateBtn.disabled = true;
-        numberDisplay.innerHTML = '';
-        const targets = String(number).padStart(3, '0').split('');
-        const digits = targets.map(() => {
-            const digit = document.createElement('span');
-            digit.className = 'digit';
-            digit.textContent = '0';
-            numberDisplay.appendChild(digit);
-            return digit;
-        });
-        let index = digits.length - 1;
-        let ticks = 0;
-        const timer = setInterval(() => {
-            for (let i = 0; i <= index; i++) digits[i].textContent = Math.floor(Math.random() * 10);
-            if (++ticks < 3) return;
-            digits[index].textContent = targets[index];
-            digits[index].classList.add('final');
-            ticks = 0;
-            if (--index < 0) {
-                clearInterval(timer);
-                isAnimating = false;
-                generateBtn.disabled = false;
-            }
-        }, 100);
-    }
-
-    // ==== 事件綁定 ====
-    generateBtn.addEventListener('click', generateRandomNumber);
-
-    // 允許按 Enter 生成
-    [minValueInput, maxValueInput].forEach(inp => {
-        inp.addEventListener('keypress', e => {
-            if (e.key === 'Enter') generateRandomNumber();
-        });
-    });
-
-    // 初始載入
-    loadSettings();
-</script>
-
+        <form id="titleEditor" hidden>
+            <label for="titleInput">自訂標題</label>
+            <input id="titleInput" type="text" maxlength="80" placeholder="隨機亂數產生器">
+            <button type="submit" class="btn-apply">儲存標題</button>
+        </form>
+    </main>
+    <script src="storage.js"></script>
+    <script src="random-number.js"></script>
 </body>
 </html>
