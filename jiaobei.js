@@ -16,7 +16,16 @@ function buildJiaobeiAnimation(duration, startAngle, finalAngle, tilt) {
     ];
 }
 
-if (typeof module !== 'undefined' && module.exports) module.exports = { getJiaobeiResult, buildJiaobeiAnimation };
+function sampleJiaobeiThrow(random = Math.random) {
+    const plan = Array.from({ length: 2 }, () => ({ flat: random() < 0.55, duration: 1000 + random() * 4000 }));
+    // Separate near-ties visually; face draws stay independent of timing.
+    if (Math.abs(plan[0].duration - plan[1].duration) < 200) {
+        plan[1].duration = plan[0].duration <= 4800 ? plan[0].duration + 200 : plan[0].duration - 200;
+    }
+    return plan;
+}
+
+if (typeof module !== 'undefined' && module.exports) module.exports = { getJiaobeiResult, buildJiaobeiAnimation, sampleJiaobeiThrow };
 
 if (typeof document !== 'undefined') (() => {
     const byId = id => document.getElementById(id);
@@ -24,7 +33,6 @@ if (typeof document !== 'undefined') (() => {
     const labels = [byId('faceOne'), byId('faceTwo')];
     const throwBtn = byId('throwBtn');
     const resetBtn = byId('resetJiaobeiBtn');
-    const durationInput = byId('throwDuration');
     const result = byId('jiaobeiResult');
     const meaning = byId('resultMeaning');
     const counts = { sheng: 0, xiao: 0, ku: 0 };
@@ -35,32 +43,20 @@ if (typeof document !== 'undefined') (() => {
     let busy = false;
     let ready = false;
     let generation = 0;
-    const durationKey = 'jiaobeiDurationSeconds';
-    const savedDuration = Number(toolStorage.get(durationKey));
-    durationInput.value = Number.isFinite(savedDuration) && savedDuration >= .5 && savedDuration <= 15 ? Math.round(savedDuration * 10) / 10 : 2;
-    function updateDuration() {
-        const text = `${Number(durationInput.value).toFixed(1)} 秒`;
-        byId('throwDurationValue').textContent = text;
-        durationInput.setAttribute('aria-valuetext', text);
-    }
-    updateDuration();
-    durationInput.addEventListener('input', () => { updateDuration(); toolStorage.set(durationKey, durationInput.value); });
 
     function setBusy(value) {
         busy = value;
         throwBtn.disabled = resetBtn.disabled = value || !ready;
-        durationInput.disabled = value;
     }
     function updateCounts() {
         for (const key of Object.keys(counts)) byId(`${key}Count`).textContent = `${counts[key]} 次`;
         byId('throwCount').textContent = counts.sheng + counts.xiao + counts.ku;
     }
-    function drawFaces() {
-        blocks.forEach((block, index) => {
-            block.style.transform = `rotateZ(${tilts[index]}deg) rotateX(${angles[index]}deg)`;
-            labels[index].textContent = `${index === 0 ? '第一' : '第二'}片：${angles[index] === 0 ? '平面' : '凸面'}`;
-        });
+    function drawFace(index) {
+        blocks[index].style.transform = `rotateZ(${tilts[index]}deg) rotateX(${angles[index]}deg)`;
+        labels[index].textContent = `${index === 0 ? '第一' : '第二'}片：${angles[index] === 0 ? '平面' : '凸面'}`;
     }
+    function drawFaces() { blocks.forEach((_, index) => drawFace(index)); }
     drawFaces();
 
     throwBtn.addEventListener('click', async () => {
@@ -73,24 +69,33 @@ if (typeof document !== 'undefined') (() => {
         meaning.textContent = '等待兩片筊杯落定。';
         labels.forEach(label => { label.textContent = '翻轉中…'; });
         try {
-            // Two independent uniform bits; simulated probabilities are 50/25/25.
-            const bits = window.crypto?.getRandomValues ? crypto.getRandomValues(new Uint8Array(1))[0] : Math.floor(Math.random() * 256);
-            const flats = [(bits & 1) === 0, (bits & 2) === 0];
-            const finalAngles = flats.map(flat => flat ? 0 : 180);
-            if (!matchMedia('(prefers-reduced-motion: reduce)').matches && blocks.every(block => block.animate)) {
-                const duration = Number(durationInput.value) * 1000;
-                animations = blocks.map((block, index) => block.animate(
-                    buildJiaobeiAnimation(duration, angles[index], finalAngles[index], tilts[index]),
-                    { duration, easing: 'linear', fill: 'forwards' }
-                ));
-                await Promise.all(animations.map(animation => animation.finished));
-            }
-            if (generation !== currentGeneration) return;
-            angles = finalAngles;
-            drawFaces();
-            animations.forEach(animation => animation.cancel());
+            const random = () => window.crypto?.getRandomValues
+                ? window.crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000 : Math.random();
+            const plan = sampleJiaobeiThrow(random);
+            const landed = [false, false];
+            const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
             animations = [];
-            const outcome = getJiaobeiResult(...flats);
+            await Promise.all(blocks.map(async (block, index) => {
+                const { flat, duration } = plan[index];
+                const finalAngle = flat ? 0 : 180;
+                if (!reducedMotion && block.animate) {
+                    const animation = block.animate(buildJiaobeiAnimation(duration, angles[index], finalAngle, tilts[index]),
+                        { duration, easing: 'linear', fill: 'forwards' });
+                    animations[index] = animation;
+                    await animation.finished;
+                }
+                if (generation !== currentGeneration) return;
+                angles[index] = finalAngle;
+                drawFace(index);
+                animations[index]?.cancel();
+                animations[index] = null;
+                landed[index] = true;
+                toolAudio.flip();
+                if (!landed.every(Boolean)) result.textContent = `${index === 0 ? '第一' : '第二'}片已落定，等待另一片…`;
+            }));
+            if (generation !== currentGeneration) return;
+            animations = [];
+            const outcome = getJiaobeiResult(plan[0].flat, plan[1].flat);
             counts[outcome.key]++;
             result.textContent = `${outcome.name}・${outcome.faces}`;
             meaning.textContent = outcome.meaning;
@@ -98,11 +103,13 @@ if (typeof document !== 'undefined') (() => {
             if (outcome.key === 'sheng') toolAudio.win(); else toolAudio.flip();
         } catch {
             if (generation === currentGeneration) {
-                animations.forEach(animation => animation.cancel());
+                generation++;
+                animations.forEach(animation => animation?.cancel());
                 animations = [];
                 drawFaces();
                 result.textContent = '這次擲杯已取消，請再擲一次。';
                 meaning.textContent = '';
+                setBusy(false);
             }
         } finally {
             if (generation === currentGeneration) setBusy(false);
@@ -120,7 +127,7 @@ if (typeof document !== 'undefined') (() => {
     });
     window.addEventListener('pagehide', () => {
         generation++;
-        animations.forEach(animation => animation.cancel());
+        animations.forEach(animation => animation?.cancel());
         animations = [];
         drawFaces();
         result.textContent = '準備好了，擲一次杯吧！';
