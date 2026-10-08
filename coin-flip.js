@@ -7,7 +7,7 @@
     const durationValue = document.getElementById('flipDurationValue');
     const durationKey = 'coinFlipDurationSeconds';
     const savedDuration = Number(toolStorage.get(durationKey));
-    durationInput.value = Number.isFinite(savedDuration) && savedDuration >= 0.5 && savedDuration <= 5
+    durationInput.value = Number.isFinite(savedDuration) && savedDuration >= 0.5 && savedDuration <= 15
         ? Math.round(savedDuration * 10) / 10 : 1.9;
 
     function updateDuration() {
